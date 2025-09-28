@@ -9,6 +9,7 @@ public class App {
         System.out.println("Application is starting... Wait for a while... Testing !!!");
         PatientController controller = new PatientController();
         controller.start();
+
         // Your application logic will go here
     }
 }
