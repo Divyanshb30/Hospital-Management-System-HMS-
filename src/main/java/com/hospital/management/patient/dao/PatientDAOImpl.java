@@ -1,26 +1,24 @@
 package com.hospital.management.patient.dao;
 
+import com.hospital.management.common.config.DatabaseConfig; // Add this import
 import com.hospital.management.patient.model.Patient;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /**
  * JDBC implementation of PatientDAO using try-with-resources.
  */
 public class PatientDAOImpl implements PatientDAO {
 
     // You will later replace this with ConnectionFactory
+    // ✅ FIXED: Use our DatabaseConfig instead of hardcoded connection
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/hospital_db",
-                "root",
-                "password"
-        );
+        return DatabaseConfig.getConnection();
     }
 
+    // ... rest of your existing methods remain exactly the same ...
     @Override
     public Long insert(Patient patient) {
         String sql = "INSERT INTO patients (first_name, last_name, date_of_birth, gender, phone, email, address, blood_group, status) " +
@@ -47,6 +45,7 @@ public class PatientDAOImpl implements PatientDAO {
                 }
             }
         } catch (SQLException e) {
+            System.err.println("❌ Error inserting patient: " + e.getMessage());
             e.printStackTrace();
         }
         return null;

@@ -68,7 +68,7 @@ public class Patient {
     // --- Object methods ---
 
     /* This is used because lets say we call same patient 2 times from database they will be 2 java objects
-        but because of this they will have same reference.
+        but because of this they will have same id value.
      */
     @Override
     public boolean equals(Object o) {
