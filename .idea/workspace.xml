@@ -5,11 +5,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08bee81d-135e-468b-9857-280a31c5694d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/controller/BillingController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/dao/BillingDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/dao/BillingDAOImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/model/Bill.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/model/Insurance.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/model/Invoice.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/model/Payment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/model/PaymentPlan.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/service/BillingService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/service/BillingServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/billing/service/PaymentProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/controller/InventoryController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/dao/InventoryDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/dao/InventoryDAOImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/model/Equipment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/model/Medicine.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/model/PurchaseOrder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/model/StockAlert.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/model/Supplier.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/service/InventoryService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/service/InventoryServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/inventory/service/StockMonitor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/database/migrations/V1_0_3__Create_Doctor_Tables.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/dao/PatientDAOImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/dao/PatientDAOImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/model/Patient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/model/Patient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/database/migrations/V1_0_0__Create_Base_Schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/database/migrations/V1_0_0__Create_Base_Schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/Doctor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/Doctor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorSchedule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorSchedule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorSpecialization.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorSpecialization.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorStats.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/DoctorStats.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +58,7 @@
   &quot;associatedIndex&quot;: 4
 }</component>
   <component name="ProjectId" id="33I7ZbHbLg8AubTJSpgHjemRQU0" />
-  <component name="ProjectLevelVcsManager">
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
   <component name="ProjectViewState">
@@ -45,15 +72,20 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "DivyanshS",
+    "git-widget-placeholder": "Merging AbhishekN",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Vivek/Java Proj Amdocs/Hospital-Management-System-HMS-",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
+    "last_opened_file_path": "/Users/abhisheknaithani/Desktop/Projects/Hospital-Management-System-HMS-/src/main/resources/database/migrations",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "preferences.keymap"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/database/migrations" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

@@ -1,7 +1,9 @@
 package com.hospital.management;
 
 import com.hospital.management.common.config.DatabaseConfig;
+import com.hospital.management.medical.controller.MedicalRecordController;
 import com.hospital.management.patient.controller.PatientController;
+import com.hospital.management.doctor.controller.DoctorController;
 
 import java.util.Scanner;
 
@@ -38,7 +40,7 @@ public class App {
             System.out.println("🏥 HOSPITAL MANAGEMENT SYSTEM - MAIN MENU");
             System.out.println("=".repeat(50));
             System.out.println("1. 👤 Patient Management");
-            System.out.println("2. 👩‍⚕️ Doctor Management (Coming Soon)");
+            System.out.println("2. 👩‍⚕️ Doctor Management");
             System.out.println("3. 📅 Appointment Management (Coming Soon)");
             System.out.println("4. 💊 Prescription Management (Coming Soon)");
             System.out.println("5. 💰 Billing Management (Coming Soon)");
@@ -56,7 +58,17 @@ public class App {
                         PatientController controller = new PatientController();
                         controller.start();
                     }
-                    case 2, 3, 4, 5, 6 -> System.out.println("🚧 Feature coming soon in next sprint!");
+                    case 2 -> {
+                        System.out.println("\n🔄 Launching Doctor Management System...");
+                        DoctorController controller = new DoctorController();
+                        controller.doctorMenu();
+                    }
+                    case 3 -> {
+                        System.out.println("\n🔄 Launching Medical Management System...");
+                        MedicalRecordController controller = new MedicalRecordController();
+                        controller.menu();
+                    }
+                    case 4, 5, 6 -> System.out.println("🚧 Feature coming soon in next sprint!");
                     case 0 -> {
                         System.out.println("👋 Thank you for using Hospital Management System!");
                         System.out.println("💡 Stay healthy! - Team16");
