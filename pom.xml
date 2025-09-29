@@ -3,19 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <groupId>com.hospital.management</groupId>
     <artifactId>hospital-management-system</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    
+
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <!-- MySQL JDBC Driver -->
         <dependency>
@@ -23,7 +23,7 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.1.0</version>
         </dependency>
-        
+
         <!-- JUnit for Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -32,7 +32,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
             <!-- Compiler Plugin -->
@@ -45,7 +45,7 @@
                     <target>17</target>
                 </configuration>
             </plugin>
-            
+
             <!-- Shade Plugin for Executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
