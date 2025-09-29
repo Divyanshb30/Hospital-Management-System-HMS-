@@ -122,10 +122,13 @@ public class PatientController {
         }
 
         Patient p = existing.get();
+
         System.out.print("Update phone [" + p.getPhone() + "]: ");
-        p.setPhone(scanner.nextLine().trim());
+        String phoneNo = scanner.nextLine().trim();
+        p.setPhone(phoneNo.isEmpty() ? p.getPhone() : phoneNo);
         System.out.print("Update email [" + p.getEmail() + "]: ");
-        p.setEmail(scanner.nextLine().trim());
+        String email = scanner.nextLine().trim();
+        p.setEmail(email.isEmpty() ? p.getEmail() : email);
 
         boolean success = patientService.updatePatient(p);
         System.out.println(success ? "✅ Patient updated." : "❌ Update failed.");
