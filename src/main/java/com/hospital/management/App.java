@@ -37,15 +37,15 @@ public class App {
     private static void showMainMenu() {
         while (true) {
             System.out.println("\n" + "=".repeat(50));
-            System.out.println("🏥 HOSPITAL MANAGEMENT SYSTEM - MAIN MENU");
+            System.out.println("🏥 HOSPITAL MANAGEMENT SYSTEM - MAIN MENU!!");
             System.out.println("=".repeat(50));
-            System.out.println("1. 👤 Patient Management");
-            System.out.println("2. 👩‍⚕️ Doctor Management");
-            System.out.println("3. 📅 Appointment Management (Coming Soon)");
-            System.out.println("4. 💊 Prescription Management (Coming Soon)");
-            System.out.println("5. 💰 Billing Management (Coming Soon)");
-            System.out.println("6. 📊 Reports & Statistics (Coming Soon)");
-            System.out.println("0. 🚪 Exit");
+            System.out.println("1. Patient Management");
+            System.out.println("2. Doctor Management");
+            System.out.println("3. Appointment Management (Coming Soon)");
+            System.out.println("4. Prescription Management (Coming Soon)");
+            System.out.println("5. Billing Management (Coming Soon)");
+            System.out.println("6. Reports & Statistics (Coming Soon)");
+            System.out.println("0. Exit");
             System.out.println("=".repeat(50));
             System.out.print("Select an option (0-6): ");
 

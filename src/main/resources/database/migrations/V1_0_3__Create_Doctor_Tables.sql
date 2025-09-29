@@ -58,12 +58,12 @@ INSERT INTO specializations (name, description) VALUES
 ('General Medicine', 'General healthcare and family medicine');
 
 INSERT INTO doctors (name, specialization_id, contact, department) VALUES
-('Dr. Sarah Johnson', 1, '555-0101', 'Cardiology'),
-('Dr. Michael Chen', 2, '555-0102', 'Neurology'),
-('Dr. Emily Williams', 3, '555-0103', 'Orthopedics'),
-('Dr. David Brown', 4, '555-0104', 'Pediatrics'),
-('Dr. Lisa Davis', 5, '555-0105', 'Dermatology'),
-('Dr. James Wilson', 9, '555-0106', 'General Medicine');
+('Dr. Sarah Johnson', 1, '1234567890', 'Cardiology'),
+('Dr. Michael Chen', 2, '1234567890', 'Neurology'),
+('Dr. Emily Williams', 3, '1234567890', 'Orthopedics'),
+('Dr. David Brown', 4, '1234567890', 'Pediatrics'),
+('Dr. Lisa Davis', 5, '1234567890', 'Dermatology'),
+('Dr. James Wilson', 9, '1234567890', 'General Medicine');
 
 INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time) VALUES
 (1, 'MONDAY', '09:00:00', '17:00:00'),

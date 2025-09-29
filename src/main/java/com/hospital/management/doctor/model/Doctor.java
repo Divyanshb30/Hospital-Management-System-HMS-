@@ -48,4 +48,5 @@ public class Doctor {
         return String.format("Doctor{id=%d, name='%s', specialization=%d, contact='%s', department='%s'}",
                 doctorId, name, specializationId, contact, department);
     }
+
 }

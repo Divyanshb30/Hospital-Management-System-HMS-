@@ -6,8 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="08bee81d-135e-468b-9857-280a31c5694d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/controller/PatientController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/controller/PatientController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/dao/PatientDAOImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/patient/dao/PatientDAOImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/controller/DoctorController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/controller/DoctorController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/dao/DoctorSpecializationDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/dao/DoctorSpecializationDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/dao/DoctorSpecializationDAOImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/dao/DoctorSpecializationDAOImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/Doctor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/model/Doctor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hospital/management/doctor/service/DoctorServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/database/migrations/V1_0_3__Create_Doctor_Tables.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/database/migrations/V1_0_3__Create_Doctor_Tables.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -58,14 +58,16 @@ public class DoctorSpecializationDAOImpl implements DoctorSpecializationDAO {
     }
 
     @Override
-    public void delete(int id) {
+    public boolean delete(int id) {
         String sql = "DELETE FROM specializations WHERE specialization_id=?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) { e.printStackTrace(); }
+        return false;
     }
+
 
     private DoctorSpecialization mapRow(ResultSet rs) throws SQLException {
         DoctorSpecialization s = new DoctorSpecialization();
