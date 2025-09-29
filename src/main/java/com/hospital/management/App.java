@@ -36,7 +36,7 @@ public class App {
     private static void showMainMenu() {
         while (true) {
             System.out.println("\n" + "=".repeat(50));
-            System.out.println("🏥 HOSPITAL MANAGEMENT SYSTEM - MAIN MENU");
+            System.out.println("🏥 HOSPITAL MANAGEMENT SYSTEM - MAIN MENU!!");
             System.out.println("=".repeat(50));
             System.out.println("1. Patient Management");
             System.out.println("2. Doctor Management");
