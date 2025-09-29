@@ -19,12 +19,17 @@ public class DatabaseConfig {
     // Connection URLs
     private static final String ROOT_URL = String.format("jdbc:mysql://%s:%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
             HOST, PORT);
-    private static final String DATABASE_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
-            HOST, PORT, DATABASE);
+//    private static final String DATABASE_URL = String.format("jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
+//            HOST, PORT, DATABASE);
+private static final String DATABASE_URL = String.format(
+        "jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useAffectedRows=true",
+        HOST, PORT, DATABASE
+);
+
 
     // Local development credentials - UPDATE THESE WITH YOUR LOCAL MYSQL CREDENTIALS
     private static final String USERNAME = "root";  // Your local MySQL username
-    private static final String PASSWORD = "12348765@";  // Your local MySQL password
+    private static final String PASSWORD = "root@123";  // Your local MySQL password
 
     static {
         try {
