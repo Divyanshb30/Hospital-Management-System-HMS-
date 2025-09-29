@@ -44,3 +44,54 @@ CREATE TABLE IF NOT EXISTS doctor_stats (
   average_rating DECIMAL(3,2) DEFAULT 0.00,
   FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS medical_records (
+  medical_record_id INT AUTO_INCREMENT PRIMARY KEY,
+  patient_id INT NOT NULL,
+  created_by_doctor_id INT,
+  chief_complaint TEXT,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS diagnoses (
+  diagnosis_id INT AUTO_INCREMENT PRIMARY KEY,
+  medical_record_id INT NOT NULL,
+  code VARCHAR(50),
+  description TEXT,
+  severity VARCHAR(20),
+  diagnosed_by_doctor_id INT,
+  diagnosed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (medical_record_id) REFERENCES medical_records(medical_record_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS treatments (
+  treatment_id INT AUTO_INCREMENT PRIMARY KEY,
+  medical_record_id INT NOT NULL,
+  treatment_plan TEXT,
+  start_date DATE,
+  end_date DATE,
+  assigned_by_doctor_id INT,
+  status VARCHAR(30) DEFAULT 'ACTIVE',
+  FOREIGN KEY (medical_record_id) REFERENCES medical_records(medical_record_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS prescriptions (
+  prescription_id INT AUTO_INCREMENT PRIMARY KEY,
+  medical_record_id INT NOT NULL,
+  notes TEXT,
+  date_issued DATE,
+  FOREIGN KEY (medical_record_id) REFERENCES medical_records(medical_record_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS medical_tests (
+  test_id INT AUTO_INCREMENT PRIMARY KEY,
+  medical_record_id INT NOT NULL,
+  test_type VARCHAR(100),
+  result TEXT,
+  result_date DATE,
+  status VARCHAR(30) DEFAULT 'ORDERED',
+  FOREIGN KEY (medical_record_id) REFERENCES medical_records(medical_record_id) ON DELETE CASCADE
+);
