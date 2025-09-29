@@ -1,9 +1,6 @@
 package com.hospital.management;
 
 import com.hospital.management.common.config.DatabaseConfig;
-import com.hospital.management.medical.controller.MedicalRecordController;
-import com.hospital.management.patient.controller.PatientController;
-import com.hospital.management.doctor.controller.DoctorController;
 
 import java.util.Scanner;
 
@@ -55,18 +52,15 @@ public class App {
                 switch (choice) {
                     case 1 -> {
                         System.out.println("\n🔄 Launching Patient Management System...");
-                        PatientController controller = new PatientController();
-                        controller.start();
+
                     }
                     case 2 -> {
                         System.out.println("\n🔄 Launching Doctor Management System...");
-                        DoctorController controller = new DoctorController();
-                        controller.doctorMenu();
+
                     }
                     case 3 -> {
                         System.out.println("\n🔄 Launching Medical Management System...");
-                        MedicalRecordController controller = new MedicalRecordController();
-                        controller.menu();
+
                     }
                     case 4, 5, 6 -> System.out.println("🚧 Feature coming soon in next sprint!");
                     case 0 -> {
