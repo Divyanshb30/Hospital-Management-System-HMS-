@@ -8,7 +8,12 @@ import com.hospital.management.common.exceptions.ValidationException;
 import com.hospital.management.common.utils.InputValidator;
 import com.hospital.management.common.utils.DateTimeUtil;
 import com.hospital.management.common.utils.PasswordEncoder;
+import com.hospital.management.models.Admin;
+import com.hospital.management.models.Department;
+import com.hospital.management.models.Doctor;
+import com.hospital.management.models.Patient;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 /**
@@ -487,6 +492,7 @@ public class App {
         }
     }
 
+
     // ==================== PLACEHOLDER METHODS FOR FUTURE IMPLEMENTATION ====================
 
     // Patient Dashboard Methods
@@ -550,4 +556,50 @@ public class App {
         System.out.println("🔐 ADMIN: Full system access for hospital management");
         System.out.println("💡 For technical support, contact: Team16");
     }
+
+    // Add this method to your App.java for testing models
+    private static void testModels() {
+        System.out.println("🧪 Testing Model Classes");
+        System.out.println("========================");
+
+        try {
+            // Test Patient
+            Patient patient = new Patient("john_doe", "hash123", "john@email.com", "9876543210");
+            patient.setFirstName("John");
+            patient.setLastName("Doe");
+            patient.setDateOfBirth(LocalDate.of(1990, 5, 15));
+            patient.setGender(Patient.Gender.MALE);
+            patient.validate();
+            System.out.println("✅ Patient model: " + patient.getDisplayName() + ", Age: " + patient.getAge());
+
+            // Test Department
+            Department cardiology = new Department("Cardiology", "Heart diseases", "Building A");
+            cardiology.validate();
+            System.out.println("✅ Department model: " + cardiology.getDisplayName());
+
+            // Test Doctor
+            Doctor doctor = new Doctor("dr_smith", "hash123", "smith@hospital.com", "9876543211");
+            doctor.setFirstName("John");
+            doctor.setLastName("Smith");
+            doctor.setSpecialization("Cardiologist");
+            doctor.setLicenseNumber("MED12345");
+            doctor.setDepartmentId(1L);
+            doctor.validate();
+            System.out.println("✅ Doctor model: " + doctor.getDisplayName());
+
+            // Test Admin
+            Admin admin = new Admin("admin", "hash123", "admin@hospital.com", "9876543212");
+            admin.setFirstName("System");
+            admin.setLastName("Administrator");
+            System.out.println("✅ Admin model: " + admin.getDisplayName());
+
+            System.out.println("🎉 All model classes working correctly!");
+
+        } catch (Exception e) {
+            System.out.println("❌ Model test failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
 }

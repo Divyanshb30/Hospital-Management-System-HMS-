@@ -11,10 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * Database Migration Runner for Hospital Management System
- * Executes SQL migration scripts in version order
+ * Executes SQL migration scripts in version order with improved parsing
  */
 public class DatabaseMigrationRunner {
 
@@ -146,7 +147,7 @@ public class DatabaseMigrationRunner {
     }
 
     /**
-     * Execute a single migration file with proper SQL parsing
+     * Execute a single migration file with improved SQL parsing
      */
     private static void executeMigration(String migrationFile, String version) {
         System.out.println("🚀 Executing migration: " + migrationFile);
@@ -165,28 +166,24 @@ public class DatabaseMigrationRunner {
                 return;
             }
 
-            // Debug: Print the actual SQL content
-            System.out.println("🔍 Raw SQL content:");
-            System.out.println("===================");
-            System.out.println(sqlContent);
-            System.out.println("===================");
-
             try (Connection conn = DatabaseConfig.getConnection()) {
+                // Disable auto-commit for transaction control
+                conn.setAutoCommit(false);
 
                 // Clean up the SQL content
                 sqlContent = cleanSqlContent(sqlContent);
 
-                // Parse SQL statements properly
-                List<String> statements = parseSqlStatements(sqlContent);
+                // Parse SQL statements with improved logic
+                List<String> statements = parseStatements(sqlContent);
                 System.out.println("📝 Found " + statements.size() + " SQL statements to execute");
 
                 int executedCount = 0;
 
                 for (int i = 0; i < statements.size(); i++) {
                     String sql = statements.get(i).trim();
-                    if (!sql.isEmpty() && !isCommentLine(sql)) {
+                    if (!sql.isEmpty()) {
                         System.out.println("🔧 [" + (i+1) + "/" + statements.size() + "] Executing SQL: " +
-                                sql.substring(0, Math.min(sql.length(), 100)) + "...");
+                                getStatementType(sql) + "...");
 
                         try (Statement stmt = conn.createStatement()) {
                             stmt.execute(sql);
@@ -194,12 +191,16 @@ public class DatabaseMigrationRunner {
                             System.out.println("✅ SQL statement executed successfully");
                         } catch (SQLException e) {
                             System.err.println("❌ SQL execution failed: " + e.getMessage());
-                            System.err.println("🔍 Failed SQL: " + sql);
+                            System.err.println("🔍 Failed SQL: " + sql.substring(0, Math.min(sql.length(), 200)) + "...");
+                            // Rollback transaction on error
+                            conn.rollback();
                             throw e;
                         }
                     }
                 }
 
+                // Commit all changes
+                conn.commit();
                 System.out.println("📊 Successfully executed " + executedCount + " SQL statements");
 
                 // Record migration execution
@@ -227,28 +228,99 @@ public class DatabaseMigrationRunner {
     }
 
     /**
-     * Parse SQL statements correctly while preserving order
+     * Improved SQL statement parsing
      */
-    private static List<String> parseSqlStatements(String sqlContent) {
+    private static List<String> parseStatements(String sqlContent) {
         List<String> statements = new ArrayList<>();
 
-        // Split by semicolon but be smart about it
-        String[] parts = sqlContent.split(";");
+        // Remove comments and split by semicolon
+        String cleanedContent = removeComments(sqlContent);
+
+        // Split by semicolon, but be careful about semicolons inside strings
+        String[] parts = smartSplit(cleanedContent, ';');
 
         for (String part : parts) {
             String trimmed = part.trim();
-
-            // Skip empty parts and comments
-            if (trimmed.isEmpty() || isCommentLine(trimmed)) {
-                continue;
+            if (!trimmed.isEmpty()) {
+                statements.add(trimmed);
             }
-
-            // If the part doesn't end with a complete statement, it might be part of a multi-line statement
-            // For now, let's add each non-empty part as a statement
-            statements.add(trimmed);
         }
 
         return statements;
+    }
+
+    /**
+     * Remove SQL comments from content
+     */
+    private static String removeComments(String sql) {
+        // Remove single line comments (-- comment)
+        sql = sql.replaceAll("(?m)^\\s*--.*$", "");
+
+        // Remove multi-line comments (/* comment */)
+        sql = sql.replaceAll("(?s)/\\*.*?\\*/", "");
+
+        return sql;
+    }
+
+    /**
+     * Smart split that handles semicolons inside strings properly
+     */
+    private static String[] smartSplit(String text, char delimiter) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inString = false;
+        boolean inEscape = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (inEscape) {
+                current.append(c);
+                inEscape = false;
+                continue;
+            }
+
+            if (c == '\\') {
+                current.append(c);
+                inEscape = true;
+                continue;
+            }
+
+            if (c == '\'' || c == '"') {
+                current.append(c);
+                inString = !inString;
+                continue;
+            }
+
+            if (c == delimiter && !inString) {
+                result.add(current.toString());
+                current = new StringBuilder();
+                continue;
+            }
+
+            current.append(c);
+        }
+
+        if (current.length() > 0) {
+            result.add(current.toString());
+        }
+
+        return result.toArray(new String[0]);
+    }
+
+    /**
+     * Get statement type for better logging
+     */
+    private static String getStatementType(String sql) {
+        String upperSql = sql.toUpperCase().trim();
+        if (upperSql.startsWith("CREATE TABLE")) return "CREATE TABLE";
+        if (upperSql.startsWith("CREATE INDEX")) return "CREATE INDEX";
+        if (upperSql.startsWith("ALTER TABLE")) return "ALTER TABLE";
+        if (upperSql.startsWith("INSERT")) return "INSERT";
+        if (upperSql.startsWith("UPDATE")) return "UPDATE";
+        if (upperSql.startsWith("DELETE")) return "DELETE";
+        if (upperSql.startsWith("DROP")) return "DROP";
+        return "SQL STATEMENT";
     }
 
     private static String cleanSqlContent(String sqlContent) {
@@ -260,11 +332,6 @@ public class DatabaseMigrationRunner {
         sqlContent = sqlContent.replaceAll("(?i)USE\\s+[^;]*;", "");
 
         return sqlContent;
-    }
-
-    private static boolean isCommentLine(String line) {
-        line = line.trim();
-        return line.startsWith("--") || line.startsWith("/*") || line.startsWith("*");
     }
 
     private static String extractDescriptionFromFilename(String filename) {
