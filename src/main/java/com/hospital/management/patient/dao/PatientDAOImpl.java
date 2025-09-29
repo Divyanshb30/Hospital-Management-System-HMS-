@@ -130,7 +130,7 @@ public class PatientDAOImpl implements PatientDAO {
             stmt.setString(9, patient.getStatus());
             stmt.setLong(10, patient.getId());
 
-            return stmt.executeUpdate() > 0;
+            return stmt.executeUpdate() >= 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,7 @@
 package com.hospital.management;
 
 import com.hospital.management.common.config.DatabaseConfig;
+import com.hospital.management.medical.controller.MedicalRecordController;
 import com.hospital.management.patient.controller.PatientController;
 import com.hospital.management.doctor.controller.DoctorController;
 
@@ -62,7 +63,12 @@ public class App {
                         DoctorController controller = new DoctorController();
                         controller.doctorMenu();
                     }
-                    case 3, 4, 5, 6 -> System.out.println("🚧 Feature coming soon in next sprint!");
+                    case 3 -> {
+                        System.out.println("\n🔄 Launching Medical Management System...");
+                        MedicalRecordController controller = new MedicalRecordController();
+                        controller.menu();
+                    }
+                    case 4, 5, 6 -> System.out.println("🚧 Feature coming soon in next sprint!");
                     case 0 -> {
                         System.out.println("👋 Thank you for using Hospital Management System!");
                         System.out.println("💡 Stay healthy! - Team16");

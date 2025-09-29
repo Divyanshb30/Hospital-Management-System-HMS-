@@ -15,7 +15,7 @@ public interface DoctorService {
     // Specialization management
     int addSpecialization(String name, String description);
     List<DoctorSpecialization> listSpecializations();
-    void deleteSpecialization(int id);
+    boolean deleteSpecialization(int id);
 
     // Schedule management
     int addSchedule(DoctorSchedule schedule);

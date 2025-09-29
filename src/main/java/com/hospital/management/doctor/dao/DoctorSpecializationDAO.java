@@ -8,5 +8,5 @@ public interface DoctorSpecializationDAO {
     int addSpecialization(DoctorSpecialization s);
     DoctorSpecialization getById(int id);
     List<DoctorSpecialization> getAll();
-    void delete(int id);
+    boolean delete(int id);
 }

@@ -98,8 +98,9 @@ public class DoctorController {
                 case 3 -> {
                     System.out.print("Specialization ID to delete: ");
                     int id = Integer.parseInt(sc.nextLine());
-                    service.deleteSpecialization(id);
-                    System.out.println("Deleted.");
+                    if(service.deleteSpecialization(id)) System.out.println("Deleted.");
+                    else System.out.println("Specialization not found with id: " + id);
+
                 }
                 case 4 -> { return; }
                 default -> System.out.println("Invalid");
@@ -112,7 +113,7 @@ public class DoctorController {
             System.out.println("\n--- Schedules ---");
             System.out.println("1. Add Schedule");
             System.out.println("2. View Schedules for Doctor");
-            System.out.println("3. Delete Schedule (not implemented in CLI)");
+            System.out.println("3. Delete Schedule");
             System.out.println("4. Back");
             System.out.print("Choice: ");
             int ch = Integer.parseInt(sc.nextLine());
