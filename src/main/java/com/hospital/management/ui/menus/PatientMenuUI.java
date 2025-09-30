@@ -107,7 +107,7 @@ public class PatientMenuUI {
 
         try {
             String loginId = input.getString("👤 Username: ");
-            String password = input.getString("🔑 Password: ");
+            String password = input.getPasswordInput("🔑 Password: ");
 
             if (loginId.isEmpty() || password.isEmpty()) {
                 System.out.println("❌ Username and password are required");
