@@ -172,9 +172,9 @@ public class PatientMenuUI {
             String phone = getValidatedInput("📱 Phone Number: ", InputValidator::isValidPhone);
             String username = getValidatedInput("👤 Username: ", InputValidator::isValidUsername);
 
-
-            String password = input.getPasswordInput("🔑Password: ");
-            String confirmPassword = getValidatedPassword("🔑Confirm Password: ");
+            // ✅ FIX: Validate the original password, not confirm password
+            String password = getValidatedPassword("🔑 Password: ");
+            String confirmPassword = input.getPasswordInput("🔑 Confirm Password: ");
 
             if (!password.equals(confirmPassword)) {
                 System.out.println("❌ Passwords do not match");
@@ -235,7 +235,6 @@ public class PatientMenuUI {
             System.out.println("❌ Registration error: " + e.getMessage());
         }
     }
-
     private void handleBookAppointment() {
         System.out.println("\n📅 BOOK APPOINTMENT");
         System.out.println("=" .repeat(25));
@@ -721,7 +720,8 @@ public class PatientMenuUI {
 
     private String getValidatedPassword(String prompt) {
         while (true) {
-            String password = input.getString(prompt);
+            // ✅ This will use the password masking from InputHandler
+            String password = input.getPasswordInput(prompt);
             if (InputValidator.isValidPassword(password)) {
                 return password;
             }
