@@ -12,5 +12,7 @@ public interface DoctorDAO {
     boolean updateDoctor(Doctor doctor);
     boolean deleteDoctor(int id);
     List<Doctor> getDoctorsByDepartment(Long departmentId);
+    boolean updateDoctorQualification(Long doctorId, String qualification);
+    boolean updateConsultationFee(Long doctorId, java.math.BigDecimal consultationFee);
 
 }

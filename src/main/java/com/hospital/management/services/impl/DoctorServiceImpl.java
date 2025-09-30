@@ -56,12 +56,56 @@ public class DoctorServiceImpl implements DoctorService {
         return doctorDAO.getDoctorById(doctorId.intValue());
     }
 
+    @Override
+    public boolean updateDoctor(Doctor doctor) {
+        if (doctor == null || doctor.getId() == null) {
+            return false;
+        }
+
+        try {
+            // Use the existing doctorDAO to update the doctor
+            return doctorDAO.updateDoctor(doctor);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateDoctorQualification(Long doctorId, String qualification) {
+        if (doctorId == null || qualification == null || qualification.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            return doctorDAO.updateDoctorQualification(doctorId, qualification.trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
     private List<LocalTime> generateTimeSlots() {
         List<LocalTime> slots = new ArrayList<>();
         for (int hour = 10; hour <= 17; hour++) {
             slots.add(LocalTime.of(hour, 0));
         }
         return slots;
+    }
+
+    @Override
+    public boolean updateConsultationFee(Long doctorId, java.math.BigDecimal consultationFee) {
+        if (doctorId == null || consultationFee == null) {
+            return false;
+        }
+
+        try {
+            return doctorDAO.updateConsultationFee(doctorId, consultationFee);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }

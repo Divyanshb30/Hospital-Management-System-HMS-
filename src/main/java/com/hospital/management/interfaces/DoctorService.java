@@ -12,5 +12,8 @@ public interface DoctorService {
     List<LocalTime> getAvailableTimeSlots(Long doctorId, LocalDate appointmentDate);
     boolean isDoctorAvailable(Long doctorId, LocalDate date, LocalTime time);
     Doctor getDoctorById(Long doctorId);
+    boolean updateDoctor(Doctor doctor);
+    boolean updateDoctorQualification(Long doctorId, String qualification);
+    boolean updateConsultationFee(Long doctorId, java.math.BigDecimal consultationFee);
 
 }

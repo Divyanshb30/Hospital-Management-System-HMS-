@@ -80,8 +80,7 @@ public class PatientMenuUI {
         System.out.println("1. 📅 Book Appointment");
         System.out.println("2. 👁️  View My Appointments");
         System.out.println("3. 📋 Update Profile");
-        System.out.println("4. 📊 View Medical History");
-        System.out.println("5. 💰 View Bills & Payments");
+        System.out.println("4. 💰 View Bills & Payments");
         System.out.println("9. 🔧 Account Settings");
         System.out.println("0. 🚪 Logout");
         System.out.println("=".repeat(50));
@@ -92,8 +91,7 @@ public class PatientMenuUI {
             case 1 -> handleBookAppointment();
             case 2 -> handleViewAppointments();
             case 3 -> handleUpdateProfile();
-            case 4 -> handleViewMedicalHistory();
-            case 5 -> handleViewBills();
+            case 4 -> handleViewBills();
             case 9 -> handleAccountSettings();
             case 0 -> {
                 handleLogout();
@@ -644,13 +642,9 @@ public class PatientMenuUI {
         }
     }
 
-    private void handleViewMedicalHistory() {
-        System.out.println("📊 MEDICAL HISTORY - Coming soon!");
-    }
-
     private void handleViewBills() {
-        System.out.println("\n💰 VIEW BILLS & PAYMENTS");
-        System.out.println("=" .repeat(30));
+        System.out.println("💰 VIEW BILLS & PAYMENTS");
+        System.out.println("═".repeat(30));
 
         try {
             if (!isLoggedIn || currentUser == null) {
@@ -658,12 +652,19 @@ public class PatientMenuUI {
                 return;
             }
 
-            Long patientId = currentUser.getId();
+            // ✅ FIX: Get the actual patient ID from database (same as appointments)
+            Long userId = currentUser.getId();
+            Long patientId = getPatientIdFromDatabase(userId);  // Convert user_id → patient_id
 
-            System.out.println("🔄 Fetching your bills and payments...");
+            if (patientId == null) {
+                System.out.println("❌ Patient record not found for user ID " + userId);
+                return;
+            }
+
+            System.out.println("🔍 Fetching your bills and payments...");
 
             // Call PatientController to get bills and payments
-            CommandResult result = patientController.viewPatientBills(patientId);
+            CommandResult result = patientController.viewPatientBills(patientId);  // Use patient_id = 2
 
             if (result.isSuccess() && result.getData() instanceof Map) {
                 @SuppressWarnings("unchecked")
@@ -671,7 +672,6 @@ public class PatientMenuUI {
 
                 @SuppressWarnings("unchecked")
                 List<Bill> bills = (List<Bill>) data.get("bills");
-
                 @SuppressWarnings("unchecked")
                 List<Payment> payments = (List<Payment>) data.get("payments");
 
@@ -872,9 +872,62 @@ public class PatientMenuUI {
 
     // Placeholder methods for other account settings
     private void handleChangePassword() {
-        System.out.println("🔑 CHANGE PASSWORD - Coming soon!");
-        System.out.println("🚧 This feature will allow you to change your account password");
+        System.out.println("\n🔐 CHANGE PASSWORD");
+        System.out.println("─".repeat(20));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            // Get current password for verification
+            String currentPassword = input.getPasswordInput("🔒 Enter current password: ");
+            if (currentPassword == null || currentPassword.trim().isEmpty()) {
+                System.out.println("❌ Current password is required");
+                return;
+            }
+
+            // Verify current password
+            boolean isValidPassword = userService.verifyPassword(currentUser.getUsername(), currentPassword);
+            if (!isValidPassword) {
+                System.out.println("❌ Current password is incorrect");
+                return;
+            }
+
+            // Get new password
+            String newPassword = input.getPasswordInput("🔑 Enter new password: ");
+            if (newPassword == null || newPassword.trim().length() < 6) {
+                System.out.println("❌ New password must be at least 6 characters long");
+                return;
+            }
+
+            // Confirm new password
+            String confirmPassword = input.getPasswordInput("🔑 Confirm new password: ");
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("❌ Passwords do not match");
+                return;
+            }
+
+            System.out.println("🔄 Updating password...");
+
+            // Update password using UserService
+            boolean success = userService.updatePassword(currentUser.getId(), newPassword);
+
+            if (success) {
+                System.out.println("✅ Password updated successfully!");
+                System.out.println("🔒 Please use your new password for future logins");
+            } else {
+                System.out.println("❌ Failed to update password");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error updating password: " + e.getMessage());
+        }
+
+        input.getString("\nPress Enter to continue...");
     }
+
 
     private void handleChangeEmail() {
         System.out.println("📧 CHANGE EMAIL - Coming soon!");

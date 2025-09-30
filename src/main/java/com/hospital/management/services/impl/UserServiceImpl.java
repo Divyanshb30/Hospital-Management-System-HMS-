@@ -324,14 +324,108 @@ public class UserServiceImpl implements UserService {
             }
 
             User user = userOpt.get();
-            String encodedPassword = PasswordEncoder.encodePassword(newPassword);
+
+            // ✅ FIX: Use PasswordEncoder.encodePassword() (same as login verification expects)
+            String encodedPassword = PasswordEncoder.encodePassword(newPassword.trim());
+
             user.setPasswordHash(encodedPassword);
             user.setUpdatedAt(LocalDateTime.now());
 
             return userDAO.updateUser(user);
+
         } catch (Exception e) {
             System.err.println("Error updating password: " + e.getMessage());
+            e.printStackTrace();
             return false;
+        }
+    }
+
+    // ✅ ADD THESE METHODS TO UserServiceImpl.java:
+
+    @Override
+    public boolean verifyPassword(String username, String password) {
+        if (username == null || username.trim().isEmpty() ||
+                password == null || password.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            Optional<User> userOpt = findUserByUsername(username.trim());
+            if (userOpt.isEmpty()) {
+                return false;
+            }
+
+            User user = userOpt.get();
+            String storedHash = user.getPasswordHash();
+
+            // ✅ Use PasswordEncoder.verifyPassword
+            return PasswordEncoder.verifyPassword(password, storedHash);
+
+        } catch (Exception e) {
+            System.out.println("❌ Error verifying password: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updatePassword(Long userId, String newPassword) {
+        if (userId == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            // ✅ FIX: Use PasswordEncoder.encodePassword() (same as login verification expects)
+            String encodedPassword = PasswordEncoder.encodePassword(newPassword.trim());
+
+            // Update the password hash in database
+            return userDAO.updateUserPassword(userId, encodedPassword);
+
+        } catch (Exception e) {
+            System.out.println("❌ Error updating password: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ✅ ADD THIS DEBUG METHOD to UserServiceImpl.java
+    public void debugPasswordIssue(String username, String oldPassword, String newPassword) {
+        try {
+            System.out.println("🔍 DEBUG: Password Issue Analysis");
+            System.out.println("═".repeat(50));
+
+            // Find user
+            Optional<User> userOpt = findUserByUsername(username);
+            if (userOpt.isEmpty()) {
+                System.out.println("❌ User not found: " + username);
+                return;
+            }
+
+            User user = userOpt.get();
+            String currentStoredHash = user.getPasswordHash();
+
+            System.out.println("👤 Username: " + username);
+            System.out.println("🔒 Old Password: " + oldPassword);
+            System.out.println("🔑 New Password: " + newPassword);
+            System.out.println("📂 Current Stored Hash: " + currentStoredHash);
+            System.out.println();
+
+            // Test old password verification
+            boolean oldVerifies = PasswordEncoder.verifyPassword(oldPassword, currentStoredHash);
+            System.out.println("🔍 Old password verification: " + oldVerifies);
+
+            // Generate new encoded password
+            String newEncodedPassword = PasswordEncoder.encodePassword(newPassword);
+            System.out.println("🆕 New encoded password: " + newEncodedPassword);
+
+            // Test new password verification with new encoding
+            boolean newVerifies = PasswordEncoder.verifyPassword(newPassword, newEncodedPassword);
+            System.out.println("✅ New password self-verification: " + newVerifies);
+
+            System.out.println("═".repeat(50));
+
+        } catch (Exception e) {
+            System.out.println("❌ Debug error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -133,6 +133,46 @@ public class DoctorDAOImpl implements DoctorDAO {
         return doctors;
     }
 
+    @Override
+    public boolean updateDoctorQualification(Long doctorId, String qualification) {
+        String sql = "UPDATE doctors SET qualification=?, updated_at=NOW() WHERE id=?";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, qualification);
+            stmt.setLong(2, doctorId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating doctor qualification: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateConsultationFee(Long doctorId, java.math.BigDecimal consultationFee) {
+        String sql = "UPDATE doctors SET consultation_fee=?, updated_at=NOW() WHERE id=?";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setBigDecimal(1, consultationFee);
+            stmt.setLong(2, doctorId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating consultation fee: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 
     private Doctor mapResultSetToDoctor(ResultSet rs) throws SQLException {
