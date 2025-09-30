@@ -10,8 +10,11 @@ import com.hospital.management.commands.AdminCommands.ManageUsersCommand.UserMan
 import com.hospital.management.ui.InputHandler;
 import com.hospital.management.commands.CommandResult;
 import com.hospital.management.models.User;
+import com.hospital.management.models.Department;
+import com.hospital.management.models.Appointment;
 import com.hospital.management.common.enums.UserRole;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.List;
 import java.util.Map;
@@ -88,28 +91,26 @@ public class AdminMenuUI {
         System.out.println();
         System.out.println("📊 REPORTS & ANALYTICS:");
         System.out.println("  4. 📈 Dashboard Summary");
-        System.out.println("  5. 📅 Appointment Reports");
-        System.out.println("  6. 💰 Financial Reports");
-        System.out.println("  7. 👥 User Statistics");
+        System.out.println("  5. 📅 View All Appointments");  // ✅ CHANGED
         System.out.println();
         System.out.println("🏥 HOSPITAL MANAGEMENT:");
-        System.out.println("  8. 🏢 Manage Departments");
-        System.out.println("  9. ⚙️  System Settings");
+        System.out.println("  6. 🏢 Manage Departments");      // ✅ MOVED UP
+        System.out.println("  7. 👨‍⚕️ Add Doctor");              // ✅ NEW OPTION
+        System.out.println("  8. ⚙️  System Settings");
         System.out.println("  0. 🚪 Logout");
         System.out.println("=".repeat(60));
 
-        int choice = input.getInt("Select an option (0-9): ", 0, 9);
+        int choice = input.getInt("Select an option (0-8): ", 0, 8);
 
         switch (choice) {
             case 1 -> handleViewAllUsers();
             case 2 -> handleSearchUserDetails();
             case 3 -> handleDeleteUser();
             case 4 -> handleDashboardSummary();
-            case 5 -> handleAppointmentReports();
-            case 6 -> handleFinancialReports();
-            case 7 -> handleUserStatistics();
-            case 8 -> handleManageDepartments();
-            case 9 -> handleSystemSettings();
+            case 5 -> handleViewAllAppointments();      // ✅ CHANGED
+            case 6 -> handleManageDepartments();        // ✅ NOW IMPLEMENTED
+            case 7 -> handleAddDoctor();               // ✅ NEW
+            case 8 -> handleSystemSettings();          // ✅ NOW IMPLEMENTED
             case 0 -> {
                 handleLogout();
                 return false;
@@ -350,9 +351,10 @@ public class AdminMenuUI {
         }
     }
 
-    private void handleAppointmentReports() {
-        System.out.println("\n📅 APPOINTMENT REPORTS");
-        System.out.println("=" .repeat(25));
+    // ✅ NEW: View All Appointments (instead of appointment reports)
+    private void handleViewAllAppointments() {
+        System.out.println("\n📅 VIEW ALL APPOINTMENTS");
+        System.out.println("=" .repeat(30));
 
         try {
             if (!isLoggedIn || currentUser == null) {
@@ -362,54 +364,80 @@ public class AdminMenuUI {
 
             Long adminId = currentUser.getId();
 
-            System.out.println("🔄 Generating appointment report...");
+            System.out.println("🔄 Fetching all appointments...");
 
-            // Call AdminController to generate appointment report
-            CommandResult result = adminController.generateReport(adminId, ReportType.APPOINTMENT_REPORT);
+            // Call AdminController to view all appointments
+            CommandResult result = adminController.viewAllAppointments(adminId);
 
             if (result.isSuccess()) {
                 System.out.println("✅ " + result.getMessage());
-                System.out.println("📅 Appointment report generated successfully");
+
+                if (result.getData() instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Appointment> appointments = (List<Appointment>) result.getData();
+
+                    if (appointments.isEmpty()) {
+                        System.out.println("📋 No appointments found");
+                    } else {
+                        System.out.println("\n📅 System Appointments:");
+                        System.out.println("─".repeat(100));
+                        System.out.printf("%-4s %-12s %-12s %-15s %-15s %-15s %-25s%n",
+                                "ID", "Patient ID", "Doctor ID", "Date", "Time", "Status", "Reason");
+                        System.out.println("─".repeat(100));
+
+                        for (Appointment appointment : appointments) {
+                            String reason = appointment.getReason();
+                            if (reason != null && reason.length() > 22) {
+                                reason = reason.substring(0, 19) + "...";
+                            }
+
+                            System.out.printf("%-4s %-12s %-12s %-15s %-15s %-15s %-25s%n",
+                                    appointment.getId() != null ? appointment.getId() : "N/A",
+                                    appointment.getPatientId() != null ? appointment.getPatientId() : "N/A",
+                                    appointment.getDoctorId() != null ? appointment.getDoctorId() : "N/A",
+                                    appointment.getAppointmentDate() != null ? appointment.getAppointmentDate() : "N/A",
+                                    appointment.getAppointmentTime() != null ? appointment.getAppointmentTime() : "N/A",
+                                    appointment.getStatus() != null ? appointment.getStatus() : "N/A",
+                                    reason != null ? reason : "N/A");
+                        }
+                        System.out.println("─".repeat(100));
+                        System.out.println("Total Appointments: " + appointments.size());
+                    }
+                }
             } else {
                 System.out.println("❌ " + result.getMessage());
             }
 
         } catch (Exception e) {
-            System.out.println("❌ Appointment report error: " + e.getMessage());
+            System.out.println("❌ View appointments error: " + e.getMessage());
         }
     }
 
-    private void handleFinancialReports() {
-        System.out.println("\n💰 FINANCIAL REPORTS");
-        System.out.println("=" .repeat(22));
+    // ✅ IMPLEMENTED: Manage Departments
+    private void handleManageDepartments() {
+        while (true) {
+            System.out.println("\n🏢 MANAGE DEPARTMENTS");
+            System.out.println("=" .repeat(25));
+            System.out.println("1. 👁️  View Existing Departments");
+            System.out.println("2. ➕ Add New Department");
+            System.out.println("3. 🗑️  Delete Existing Department");
+            System.out.println("0. ⬅️  Back to Dashboard");
+            System.out.println("=" .repeat(35));
 
-        try {
-            if (!isLoggedIn || currentUser == null) {
-                System.out.println("❌ Please login first");
-                return;
+            int choice = input.getInt("Select an option (0-3): ", 0, 3);
+
+            switch (choice) {
+                case 1 -> handleViewDepartments();
+                case 2 -> handleAddDepartment();
+                case 3 -> handleDeleteDepartment();
+                case 0 -> { return; }
+                default -> System.out.println("❌ Invalid option.");
             }
-
-            Long adminId = currentUser.getId();
-
-            System.out.println("🔄 Generating financial report...");
-
-            // Call AdminController to generate financial report
-            CommandResult result = adminController.generateReport(adminId, ReportType.FINANCIAL_REPORT);
-
-            if (result.isSuccess()) {
-                System.out.println("✅ " + result.getMessage());
-                System.out.println("💰 Financial report generated successfully");
-            } else {
-                System.out.println("❌ " + result.getMessage());
-            }
-
-        } catch (Exception e) {
-            System.out.println("❌ Financial report error: " + e.getMessage());
         }
     }
 
-    private void handleUserStatistics() {
-        System.out.println("\n👥 USER STATISTICS");
+    private void handleViewDepartments() {
+        System.out.println("\n👁️ VIEW DEPARTMENTS");
         System.out.println("=" .repeat(20));
 
         try {
@@ -420,38 +448,285 @@ public class AdminMenuUI {
 
             Long adminId = currentUser.getId();
 
-            System.out.println("🔄 Generating user statistics...");
+            System.out.println("🔄 Fetching departments...");
 
-            // Call AdminController to generate user statistics
-            CommandResult result = adminController.generateReport(adminId, ReportType.USER_STATISTICS);
+            CommandResult result = adminController.viewAllDepartments(adminId);
 
             if (result.isSuccess()) {
                 System.out.println("✅ " + result.getMessage());
-                System.out.println("👥 User statistics generated successfully");
+
+                if (result.getData() instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Department> departments = (List<Department>) result.getData();
+
+                    if (departments.isEmpty()) {
+                        System.out.println("📋 No departments found");
+                    } else {
+                        System.out.println("\n🏢 Hospital Departments:");
+                        System.out.println("─".repeat(90));
+                        System.out.printf("%-4s %-20s %-30s %-20s %-10s%n",
+                                "ID", "Name", "Description", "Location", "Status");
+                        System.out.println("─".repeat(90));
+
+                        for (Department dept : departments) {
+                            String desc = dept.getDescription();
+                            if (desc != null && desc.length() > 27) {
+                                desc = desc.substring(0, 24) + "...";
+                            }
+
+                            System.out.printf("%-4s %-20s %-30s %-20s %-10s%n",
+                                    dept.getId() != null ? dept.getId() : "N/A",
+                                    dept.getName() != null ? dept.getName() : "N/A",
+                                    desc != null ? desc : "N/A",
+                                    dept.getLocation() != null ? dept.getLocation() : "N/A",
+                                    dept.isActive() ? "Active" : "Inactive");
+                        }
+                        System.out.println("─".repeat(90));
+                        System.out.println("Total Departments: " + departments.size());
+                    }
+                }
             } else {
                 System.out.println("❌ " + result.getMessage());
             }
 
         } catch (Exception e) {
-            System.out.println("❌ User statistics error: " + e.getMessage());
+            System.out.println("❌ View departments error: " + e.getMessage());
         }
     }
 
-    // Placeholder methods for future implementation
+    private void handleAddDepartment() {
+        System.out.println("\n➕ ADD NEW DEPARTMENT");
+        System.out.println("=" .repeat(22));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long adminId = currentUser.getId();
+
+            // Collect department information
+            String name = input.getString("🏢 Department Name: ");
+            String description = input.getString("📝 Description: ");
+            String location = input.getString("📍 Location: ");
+            String phone = input.getString("📞 Phone (optional): ");
+
+            if (name.trim().isEmpty()) {
+                System.out.println("❌ Department name is required");
+                return;
+            }
+
+            System.out.println("🔄 Creating department...");
+
+            CommandResult result = adminController.addDepartment(adminId, name.trim(),
+                    description.trim(), location.trim(), phone.trim().isEmpty() ? null : phone.trim());
+
+            if (result.isSuccess()) {
+                System.out.println("✅ " + result.getMessage());
+                System.out.println("🏢 Department '" + name + "' created successfully!");
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Add department error: " + e.getMessage());
+        }
+    }
+
+    private void handleDeleteDepartment() {
+        System.out.println("\n🗑️ DELETE DEPARTMENT");
+        System.out.println("=" .repeat(20));
+        System.out.println("⚠️  WARNING: This action cannot be undone!");
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long adminId = currentUser.getId();
+            Long departmentId = Long.valueOf(input.getInt("🏢 Enter Department ID to delete: ", 1, 999999));
+
+            // Confirm deletion
+            String confirmation = input.getString("Type 'DELETE' to confirm: ");
+            if (!"DELETE".equals(confirmation)) {
+                System.out.println("❌ Operation cancelled");
+                return;
+            }
+
+            System.out.println("🔄 Deleting department...");
+
+            CommandResult result = adminController.deleteDepartment(adminId, departmentId);
+
+            if (result.isSuccess()) {
+                System.out.println("✅ " + result.getMessage());
+                System.out.println("🗑️ Department deleted successfully");
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Delete department error: " + e.getMessage());
+        }
+    }
+
+    // ✅ NEW: Add Doctor functionality
+    private void handleAddDoctor() {
+        System.out.println("\n👨‍⚕️ ADD NEW DOCTOR");
+        System.out.println("=" .repeat(20));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long adminId = currentUser.getId();
+
+            // Collect doctor information
+            System.out.println("👤 Doctor Account Information:");
+            String username = input.getString("Username: ");
+            String password = input.getString("Password: ");
+            String email = input.getString("Email: ");
+            String phone = input.getString("Phone: ");
+
+            System.out.println("\n👨‍⚕️ Doctor Personal Information:");
+            String firstName = input.getString("First Name: ");
+            String lastName = input.getString("Last Name: ");
+            String specialization = input.getString("Specialization: ");
+            String licenseNumber = input.getString("License Number: ");
+
+            System.out.println("\n🏥 Hospital Information:");
+            Long departmentId = Long.valueOf(input.getInt("Department ID: ", 1, 999999));
+            String qualification = input.getString("Qualification: ");
+            int experienceYears = input.getInt("Experience (years): ", 0, 50);
+
+            System.out.print("Consultation Fee (₹): ");
+            BigDecimal consultationFee = new BigDecimal(input.getString(""));
+
+            System.out.println("🔄 Adding doctor to system...");
+
+            CommandResult result = adminController.addDoctor(adminId, username, password, email, phone,
+                    firstName, lastName, specialization, licenseNumber, departmentId,
+                    qualification, experienceYears, consultationFee);
+
+            if (result.isSuccess()) {
+                System.out.println("✅ " + result.getMessage());
+                System.out.println("👨‍⚕️ Dr. " + firstName + " " + lastName + " added successfully!");
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Add doctor error: " + e.getMessage());
+        }
+    }
+
+    // ✅ IMPLEMENTED: System Settings
+    private void handleSystemSettings() {
+        while (true) {
+            System.out.println("\n⚙️ SYSTEM SETTINGS");
+            System.out.println("=" .repeat(18));
+            System.out.println("1. 👁️  View Admin Details");
+            System.out.println("2. 🔑 Change Admin Password");
+            System.out.println("0. ⬅️  Back to Dashboard");
+            System.out.println("=" .repeat(28));
+
+            int choice = input.getInt("Select an option (0-2): ", 0, 2);
+
+            switch (choice) {
+                case 1 -> handleViewAdminDetails();
+                case 2 -> handleChangeAdminPassword();
+                case 0 -> { return; }
+                default -> System.out.println("❌ Invalid option.");
+            }
+        }
+    }
+
+    private void handleViewAdminDetails() {
+        System.out.println("\n👁️ ADMIN DETAILS");
+        System.out.println("=" .repeat(17));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long adminId = currentUser.getId();
+
+            System.out.println("🔄 Retrieving admin profile...");
+
+            CommandResult result = adminController.viewAdminProfile(adminId);
+
+            if (result.isSuccess() && result.getData() instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> profileData = (Map<String, Object>) result.getData();
+
+                System.out.println("\n👤 Admin Profile:");
+                System.out.println("─".repeat(40));
+                System.out.println("Admin ID: " + profileData.get("id"));
+                System.out.println("Username: " + profileData.get("username"));
+                System.out.println("Email: " + profileData.get("email"));
+                System.out.println("Phone: " + profileData.get("phone"));
+                System.out.println("Role: " + profileData.get("role"));
+                System.out.println("Account Status: " + ((Boolean) profileData.get("isActive") ? "Active" : "Inactive"));
+                System.out.println("Created: " + profileData.get("createdAt"));
+                System.out.println("Last Updated: " + profileData.get("updatedAt"));
+                System.out.println("─".repeat(40));
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ View admin details error: " + e.getMessage());
+        }
+    }
+
+    private void handleChangeAdminPassword() {
+        System.out.println("\n🔑 CHANGE ADMIN PASSWORD");
+        System.out.println("=" .repeat(25));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long adminId = currentUser.getId();
+
+            String currentPassword = input.getString("🔑 Current Password: ");
+            String newPassword = input.getString("🔑 New Password: ");
+            String confirmPassword = input.getString("🔑 Confirm New Password: ");
+
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("❌ New passwords do not match");
+                return;
+            }
+
+            System.out.println("🔄 Changing password...");
+
+            CommandResult result = adminController.changeAdminPassword(adminId, currentPassword, newPassword);
+
+            if (result.isSuccess()) {
+                System.out.println("✅ " + result.getMessage());
+                System.out.println("🔑 Admin password changed successfully!");
+                System.out.println("💡 Please use your new password for future logins");
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Change password error: " + e.getMessage());
+        }
+    }
+
+    // Placeholder method for forgot password
     private void handleForgotPassword() {
         System.out.println("\n🔑 ADMIN PASSWORD RECOVERY");
         System.out.println("🔐 For security reasons, admin password recovery requires manual verification");
-        System.out.println("📧 Please contact the system administrator or Team16 for password reset");
+        System.out.println("📧 Please contact the system administrator for password reset");
         System.out.println("🚧 Automated admin password recovery - Coming soon!");
-    }
-
-    private void handleManageDepartments() {
-        System.out.println("🏢 MANAGE DEPARTMENTS - Coming soon!");
-        System.out.println("🏥 This feature will allow you to manage hospital departments");
-    }
-
-    private void handleSystemSettings() {
-        System.out.println("⚙️ SYSTEM SETTINGS - Coming soon!");
-        System.out.println("🔧 This feature will allow you to configure system-wide settings");
     }
 }

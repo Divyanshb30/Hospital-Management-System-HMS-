@@ -109,6 +109,25 @@ public class BillDAOImpl implements BillDAO {
         return false;
     }
 
+    // Add this method to BillDAOImpl.java
+    @Override
+    public List<Bill> getBillsByPatientId(Long patientId) {
+        List<Bill> bills = new ArrayList<>();
+        String sql = "SELECT * FROM bills WHERE patient_id = ? ORDER BY created_at DESC";
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, patientId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                bills.add(mapResultSetToBill(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return bills;
+    }
+
+
     private Bill mapResultSetToBill(ResultSet rs) throws SQLException {
         Bill bill = new Bill();
         bill.setId(rs.getLong("id"));

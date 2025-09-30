@@ -10,4 +10,6 @@ public interface BillDAO {
     boolean createBill(Bill bill);
     boolean updateBill(Bill bill);
     boolean deleteBill(int id);
+    List<Bill> getBillsByPatientId(Long patientId);
+
 }

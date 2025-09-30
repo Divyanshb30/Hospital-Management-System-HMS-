@@ -2,9 +2,7 @@ package com.hospital.management.controllers;
 
 import com.hospital.management.commands.Command;
 import com.hospital.management.commands.CommandResult;
-import com.hospital.management.commands.PatientCommands.RegisterPatientCommand;
-import com.hospital.management.commands.PatientCommands.BookAppointmentCommand;
-import com.hospital.management.commands.PatientCommands.ViewAppointmentsCommand;
+import com.hospital.management.commands.PatientCommands.*;
 import com.hospital.management.interfaces.UserService;
 import com.hospital.management.interfaces.AppointmentService;
 import com.hospital.management.models.Patient;
@@ -56,6 +54,31 @@ public class PatientController {
         }
     }
 
+    public CommandResult updatePatientProfile(Long patientId, String firstName, String lastName,
+                                              String email, String phone, LocalDate dateOfBirth,
+                                              Patient.Gender gender, String bloodGroup, String address,
+                                              String emergencyContactName, String emergencyContactPhone) {
+        Command command = new UpdatePatientProfileCommand(
+                patientId, firstName, lastName, email, phone, dateOfBirth, gender,
+                bloodGroup, address, emergencyContactName, emergencyContactPhone, userService);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error updating patient profile: " + e.getMessage(), e);
+        }
+    }
+
+    public CommandResult updatePatientProfile(Long patientId, String firstName, String lastName,
+                                              String email, String phone) {
+        Command command = new UpdatePatientProfileCommand(patientId, firstName, lastName,
+                email, phone, userService);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error updating patient profile: " + e.getMessage(), e);
+        }
+    }
+
     // Books an appointment for a patient
     public CommandResult bookAppointment(Long patientId, Long doctorId, LocalDate appointmentDate,
                                          LocalTime appointmentTime, String reason) {
@@ -77,4 +100,25 @@ public class PatientController {
             return CommandResult.failure("Error viewing appointments: " + e.getMessage(), e);
         }
     }
+
+    // Add this method to your PatientController class
+    public CommandResult viewPatientProfile(Long patientId) {
+        Command command = new ViewPatientProfileCommand(patientId, userService);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving patient profile: " + e.getMessage(), e);
+        }
+    }
+
+    // Add this method to PatientController
+    public CommandResult viewPatientBills(Long patientId) {
+        Command command = new ViewPatientBillsCommand(patientId);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving bills and payments: " + e.getMessage(), e);
+        }
+    }
+
 }
