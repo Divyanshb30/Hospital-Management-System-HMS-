@@ -140,6 +140,9 @@ public class RegisterPatientCommand implements Command {
         patient.setDateOfBirth(dateOfBirth);
         patient.setGender(gender);
 
+        // ✅ FIX: Set a temporary password hash so validation passes
+        patient.setPasswordHash("TEMP"); // Will be replaced in UserService
+
         // Set optional fields
         if (bloodGroup != null && !bloodGroup.trim().isEmpty()) {
             patient.setBloodGroup(bloodGroup.trim().toUpperCase());
@@ -156,4 +159,5 @@ public class RegisterPatientCommand implements Command {
 
         return patient;
     }
+
 }
