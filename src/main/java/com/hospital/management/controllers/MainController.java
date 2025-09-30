@@ -12,6 +12,7 @@ import com.hospital.management.models.Patient;
 import com.hospital.management.commands.AdminCommands.ViewReportsCommand.ReportType;
 import com.hospital.management.commands.AdminCommands.ManageUsersCommand.UserManagementAction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -79,5 +80,42 @@ public class MainController {
 
     public CommandResult generateDashboardSummary(Long adminId) {
         return adminController.generateDashboardSummary(adminId);
+    }
+
+    // Add these methods to MainController class
+
+    // Admin appointment management
+    public CommandResult viewAllAppointments(Long adminId) {
+        return adminController.viewAllAppointments(adminId);
+    }
+
+    // Admin department management
+    public CommandResult viewAllDepartments(Long adminId) {
+        return adminController.viewAllDepartments(adminId);
+    }
+
+    public CommandResult addDepartment(Long adminId, String name, String description, String location, String phone) {
+        return adminController.addDepartment(adminId, name, description, location, phone);
+    }
+
+    public CommandResult deleteDepartment(Long adminId, Long departmentId) {
+        return adminController.deleteDepartment(adminId, departmentId);
+    }
+
+    // Admin doctor management
+    public CommandResult addDoctor(Long adminId, String username, String password, String email, String phone,
+                                   String firstName, String lastName, String specialization, String licenseNumber,
+                                   Long departmentId, String qualification, int experienceYears, BigDecimal consultationFee) {
+        return adminController.addDoctor(adminId, username, password, email, phone, firstName, lastName,
+                specialization, licenseNumber, departmentId, qualification, experienceYears, consultationFee);
+    }
+
+    // Admin profile management
+    public CommandResult viewAdminProfile(Long adminId) {
+        return adminController.viewAdminProfile(adminId);
+    }
+
+    public CommandResult changeAdminPassword(Long adminId, String oldPassword, String newPassword) {
+        return adminController.changeAdminPassword(adminId, oldPassword, newPassword);
     }
 }

@@ -1,14 +1,21 @@
 package com.hospital.management.services.impl;
 
+import com.hospital.management.common.enums.UserRole;
+import com.hospital.management.dao.impl.DoctorDAOImpl;
+import com.hospital.management.dao.interfaces.DoctorDAO;
 import com.hospital.management.interfaces.UserService;
 import com.hospital.management.dao.interfaces.UserDAO;
 import com.hospital.management.dao.interfaces.PatientDAO;
 import com.hospital.management.dao.impl.UserDAOImpl;
 import com.hospital.management.dao.impl.PatientDAOImpl;
+import com.hospital.management.models.Admin;
+import com.hospital.management.models.Doctor;
 import com.hospital.management.models.User;
 import com.hospital.management.models.Patient;
 import com.hospital.management.common.utils.PasswordEncoder;
 import com.hospital.management.common.exceptions.ValidationException;
+
+import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +89,7 @@ public class UserServiceImpl implements UserService {
 
             System.out.println("✅ Retrieved generated user ID: " + userId);
 
-            // STEP 3: If it's a Patient, save patient-specific data
+            // STEP 3: Handle role-specific data creation
             if (user instanceof Patient) {
                 System.out.println("🔄 User is a Patient, saving patient-specific data...");
 
@@ -94,14 +101,34 @@ public class UserServiceImpl implements UserService {
 
                 if (!patientCreated) {
                     System.err.println("❌ Failed to save patient data to patients table");
-                    // Optionally: rollback user creation here if needed
                     return false;
                 }
 
                 System.out.println("✅ Patient data saved to patients table successfully");
                 System.out.println("🎉 Complete patient registration successful!");
+
+            } else if (user instanceof Doctor) {
+                System.out.println("🔄 User is a Doctor, saving doctor-specific data...");
+
+                Doctor doctor = (Doctor) user;
+                doctor.setId(userId); // Set user_id for foreign key relationship
+
+                System.out.println("🔄 Saving doctor data to doctors table...");
+
+                // Create DoctorDAO instance to save doctor-specific data
+                DoctorDAO doctorDAO = new DoctorDAOImpl();
+                boolean doctorCreated = doctorDAO.createDoctor(doctor);
+
+                if (!doctorCreated) {
+                    System.err.println("❌ Failed to save doctor data to doctors table");
+                    return false;
+                }
+
+                System.out.println("✅ Doctor data saved to doctors table successfully");
+                System.out.println("🎉 Complete doctor registration successful!");
+
             } else {
-                System.out.println("✅ Non-patient user registration completed");
+                System.out.println("✅ Non-patient/non-doctor user registration completed");
             }
 
             return true;
@@ -115,6 +142,7 @@ public class UserServiceImpl implements UserService {
             return false;
         }
     }
+
 
     @Override
     public boolean updateUser(User user) {
@@ -213,4 +241,99 @@ public class UserServiceImpl implements UserService {
             return Optional.empty();
         }
     }
+
+    // Replace this method in UserServiceImpl.java:
+    @Override
+    public Optional<User> findUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        List<User> users = userDAO.getAllUsers();
+        return users.stream()
+                .filter(u -> email.equals(u.getEmail()))
+                .findFirst();
+    }
+
+    @Override
+    public User createUser(String username, String password, String email, String phone, UserRole role) {
+        if (username == null || password == null || email == null || phone == null || role == null) {
+            return null;
+        }
+
+        try {
+            // Check if username or email already exists
+            if (findUserByUsername(username).isPresent()) {
+                return null; // Username exists
+            }
+
+            if (findUserByEmail(email).isPresent()) {
+                return null; // Email exists
+            }
+
+            // ✅ FIX: Create concrete User subclass based on role
+            User user;
+            switch (role) {
+                case ADMIN:
+                    user = new Admin(username, PasswordEncoder.encodePassword(password), email, phone);
+                    break;
+                case DOCTOR:
+                    user = new Doctor();
+                    user.setUsername(username);
+                    user.setPasswordHash(PasswordEncoder.encodePassword(password));
+                    user.setEmail(email);
+                    user.setPhone(phone);
+                    user.setRole(role);
+                    user.setActive(true);
+                    break;
+                case PATIENT:
+                    user = new Patient();
+                    user.setUsername(username);
+                    user.setPasswordHash(PasswordEncoder.encodePassword(password));
+                    user.setEmail(email);
+                    user.setPhone(phone);
+                    user.setRole(role);
+                    user.setActive(true);
+                    break;
+                default:
+                    return null;
+            }
+
+            // Register the user
+            if (registerUser(user, password)) {
+                return user;
+            }
+
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error creating user: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public boolean updateUserPassword(Long userId, String newPassword) {
+        if (userId == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return false;
+        }
+
+        try {
+            Optional<User> userOpt = findUserById(userId);
+            if (userOpt.isEmpty()) {
+                return false;
+            }
+
+            User user = userOpt.get();
+            String encodedPassword = PasswordEncoder.encodePassword(newPassword);
+            user.setPasswordHash(encodedPassword);
+            user.setUpdatedAt(LocalDateTime.now());
+
+            return userDAO.updateUser(user);
+        } catch (Exception e) {
+            System.err.println("Error updating password: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 }

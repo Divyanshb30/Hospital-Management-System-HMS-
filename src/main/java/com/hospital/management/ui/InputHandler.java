@@ -5,7 +5,8 @@ import java.util.Scanner;
 /**
  * Simple input handler for UI layer only
  */
-public class InputHandler {
+public class
+InputHandler {
     private static InputHandler instance;
     private final Scanner scanner = new Scanner(System.in);
 

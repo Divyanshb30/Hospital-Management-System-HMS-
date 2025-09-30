@@ -2,15 +2,12 @@ package com.hospital.management.controllers;
 
 import com.hospital.management.commands.Command;
 import com.hospital.management.commands.CommandResult;
-import com.hospital.management.commands.PatientCommands.RegisterPatientCommand;
-import com.hospital.management.commands.PatientCommands.BookAppointmentCommand;
-import com.hospital.management.commands.PatientCommands.ViewAppointmentsCommand;
+import com.hospital.management.commands.PatientCommands.*;
 import com.hospital.management.interfaces.UserService;
 import com.hospital.management.interfaces.AppointmentService;
 import com.hospital.management.models.Patient;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import com.hospital.management.commands.PatientCommands.UpdatePatientProfileCommand;
 
 /**
  * Controller handling patient-related activities by invoking commands.
@@ -103,4 +100,25 @@ public class PatientController {
             return CommandResult.failure("Error viewing appointments: " + e.getMessage(), e);
         }
     }
+
+    // Add this method to your PatientController class
+    public CommandResult viewPatientProfile(Long patientId) {
+        Command command = new ViewPatientProfileCommand(patientId, userService);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving patient profile: " + e.getMessage(), e);
+        }
+    }
+
+    // Add this method to PatientController
+    public CommandResult viewPatientBills(Long patientId) {
+        Command command = new ViewPatientBillsCommand(patientId);
+        try {
+            return command.execute();
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving bills and payments: " + e.getMessage(), e);
+        }
+    }
+
 }

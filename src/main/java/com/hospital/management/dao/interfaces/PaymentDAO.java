@@ -10,4 +10,7 @@ public interface PaymentDAO {
     boolean createPayment(Payment payment);
     boolean updatePayment(Payment payment);
     boolean deletePayment(int id);
+    // Add this method to PaymentDAO.java
+    List<Payment> getPaymentsByPatientId(Long patientId);
+
 }

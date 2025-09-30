@@ -1,5 +1,6 @@
 package com.hospital.management.dao.impl;
 
+import com.hospital.management.common.config.DatabaseConfig;
 import com.hospital.management.dao.interfaces.PaymentDAO;
 import com.hospital.management.models.Payment;
 import com.hospital.management.common.enums.PaymentStatus;
@@ -106,6 +107,27 @@ public class PaymentDAOImpl implements PaymentDAO {
         }
         return false;
     }
+
+    // Add this method to PaymentDAOImpl.java
+    @Override
+    public List<Payment> getPaymentsByPatientId(Long patientId) {
+        List<Payment> payments = new ArrayList<>();
+        String sql = "SELECT p.* FROM payments p " +
+                "INNER JOIN bills b ON p.bill_id = b.id " +
+                "WHERE b.patient_id = ? ORDER BY p.payment_date DESC";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, patientId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                payments.add(mapResultSetToPayment(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return payments;
+    }
+
 
     private Payment mapResultSetToPayment(ResultSet rs) throws SQLException {
         Payment payment = new Payment();

@@ -8,11 +8,16 @@ import com.hospital.management.models.Patient;
 import com.hospital.management.models.User;
 import com.hospital.management.common.utils.InputValidator;
 import com.hospital.management.common.enums.UserRole;
+import com.hospital.management.models.Bill;
+import com.hospital.management.models.Payment;
+
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
+import java.util.Map;
+import java.util.List;  // ✅ ADD THIS IMPORT
 
 /**
  * Patient Menu UI with login/logout functionality
@@ -454,13 +459,253 @@ public class PatientMenuUI {
         System.out.println("📊 MEDICAL HISTORY - Coming soon!");
     }
 
+    // Add these imports at the top
+
     private void handleViewBills() {
-        System.out.println("💰 BILLS & PAYMENTS - Coming soon!");
+        System.out.println("\n💰 VIEW BILLS & PAYMENTS");
+        System.out.println("=" .repeat(30));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long patientId = currentUser.getId();
+
+            System.out.println("🔄 Fetching your bills and payments...");
+
+            // Call PatientController to get bills and payments
+            CommandResult result = patientController.viewPatientBills(patientId);
+
+            if (result.isSuccess() && result.getData() instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> data = (Map<String, Object>) result.getData();
+
+                @SuppressWarnings("unchecked")
+                List<Bill> bills = (List<Bill>) data.get("bills");
+
+                @SuppressWarnings("unchecked")
+                List<Payment> payments = (List<Payment>) data.get("payments");
+
+                displayBillsAndPayments(bills, payments);
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ View bills error: " + e.getMessage());
+        }
     }
 
-    private void handleAccountSettings() {
-        System.out.println("🔧 ACCOUNT SETTINGS - Coming soon!");
+    private void displayBillsAndPayments(List<Bill> bills, List<Payment> payments) {
+        System.out.println("\n" + "═".repeat(90));
+        System.out.println("💰 YOUR BILLS & PAYMENTS SUMMARY");
+        System.out.println("═".repeat(90));
+
+        // Display Bills
+        if (bills.isEmpty()) {
+            System.out.println("📋 No bills found");
+        } else {
+            System.out.println("\n💳 BILLS:");
+            System.out.println("─".repeat(90));
+            System.out.printf("%-4s %-10s %-12s %-10s %-10s %-12s %-15s %-15s%n",
+                    "ID", "Total", "Tax", "Discount", "Final", "Status", "Bill Date", "Due Date");
+            System.out.println("─".repeat(90));
+
+            for (Bill bill : bills) {
+                System.out.printf("%-4s %-10s %-12s %-10s %-10s %-12s %-15s %-15s%n",
+                        bill.getId(),
+                        "₹" + bill.getTotalAmount(),
+                        "₹" + bill.getTaxAmount(),
+                        "₹" + bill.getDiscountAmount(),
+                        "₹" + bill.getFinalAmount(),
+                        bill.getStatus(),
+                        bill.getBillDate(),
+                        bill.getDueDate());
+            }
+            System.out.println("─".repeat(90));
+        }
+
+        System.out.println();
+
+        // Display Payments
+        if (payments.isEmpty()) {
+            System.out.println("📋 No payments found");
+        } else {
+            System.out.println("💳 PAYMENTS:");
+            System.out.println("─".repeat(90));
+            System.out.printf("%-4s %-12s %-15s %-15s %-20s %-15s%n",
+                    "ID", "Amount", "Method", "Status", "Transaction ID", "Date");
+            System.out.println("─".repeat(90));
+
+            for (Payment payment : payments) {
+                String txnId = payment.getTransactionId() != null ?
+                        (payment.getTransactionId().length() > 18 ?
+                                payment.getTransactionId().substring(0, 15) + "..." :
+                                payment.getTransactionId()) : "N/A";
+
+                System.out.printf("%-4s %-12s %-15s %-15s %-20s %-15s%n",
+                        payment.getId(),
+                        payment.getFormattedAmount(),
+                        payment.getDisplayMethod(),
+                        payment.getDisplayStatus(),
+                        txnId,
+                        payment.getPaymentDate().toLocalDate());
+            }
+            System.out.println("─".repeat(90));
+        }
+
+        System.out.println("═".repeat(90));
+        input.getString("Press Enter to continue...");
     }
+
+
+    private void handleAccountSettings() {
+        while (true) {
+            System.out.println("\n🔧 ACCOUNT SETTINGS");
+            System.out.println("=" .repeat(20));
+            System.out.println("1. 👁️  View My Complete Profile");
+            System.out.println("2. 🔑 Change Password");
+            System.out.println("3. 📧 Change Email");
+            System.out.println("4. 📱 Change Phone Number");
+            System.out.println("5. ❌ Delete Account");
+            System.out.println("0. ⬅️  Back to Dashboard");
+            System.out.println("=" .repeat(30));
+
+            int choice = input.getInt("Select an option (0-5): ", 0, 5);
+
+            switch (choice) {
+                case 1 -> handleViewCompleteProfile();
+                case 2 -> handleChangePassword();
+                case 3 -> handleChangeEmail();
+                case 4 -> handleChangePhone();
+                case 5 -> handleDeleteAccount();
+                case 0 -> { return; }
+                default -> System.out.println("❌ Invalid option.");
+            }
+        }
+    }
+
+    private void handleViewCompleteProfile() {
+        System.out.println("\n👁️ MY COMPLETE PROFILE");
+        System.out.println("=" .repeat(25));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long patientId = currentUser.getId();
+
+            System.out.println("🔄 Retrieving your complete profile...");
+
+            // Call PatientController to get complete profile
+            CommandResult result = patientController.viewPatientProfile(patientId);
+
+            if (result.isSuccess() && result.getData() instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> profileData = (Map<String, Object>) result.getData();
+
+                displayCompleteProfile(profileData);
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ View profile error: " + e.getMessage());
+        }
+    }
+
+        private void displayCompleteProfile(Map<String, Object> profileData) {
+        System.out.println("\n" + "═".repeat(60));
+        System.out.println("👤 COMPLETE PATIENT PROFILE");
+        System.out.println("═".repeat(60));
+
+        // Account Information
+        System.out.println("🔐 ACCOUNT INFORMATION:");
+        System.out.println("─".repeat(30));
+        System.out.printf("%-20s: %s%n", "User ID", profileData.get("id"));
+        System.out.printf("%-20s: %s%n", "Username", profileData.get("username"));
+        System.out.printf("%-20s: %s%n", "Email", profileData.get("email"));
+        System.out.printf("%-20s: %s%n", "Phone", profileData.get("phone"));
+        System.out.printf("%-20s: %s%n", "Role", profileData.get("role"));
+        System.out.printf("%-20s: %s%n", "Account Status",
+                (Boolean) profileData.get("isActive") ? "Active" : "Inactive");
+        System.out.printf("%-20s: %s%n", "Member Since", profileData.get("createdAt"));
+        System.out.printf("%-20s: %s%n", "Last Updated", profileData.get("updatedAt"));
+
+        System.out.println();
+
+        // Personal Information
+        System.out.println("👤 PERSONAL INFORMATION:");
+        System.out.println("─".repeat(30));
+        System.out.printf("%-20s: %s%n", "Full Name",
+                (profileData.get("firstName") != null && profileData.get("lastName") != null)
+                        ? profileData.get("firstName") + " " + profileData.get("lastName")
+                        : "Not provided");
+        System.out.printf("%-20s: %s%n", "Date of Birth",
+                profileData.get("dateOfBirth") != null ? profileData.get("dateOfBirth") : "Not provided");
+        System.out.printf("%-20s: %s%n", "Age",
+                profileData.get("age") != null ? profileData.get("age") + " years" : "Not calculated");
+        System.out.printf("%-20s: %s%n", "Gender",
+                profileData.get("gender") != null ? profileData.get("gender") : "Not provided");
+
+        System.out.println();
+
+        // Medical Information
+        System.out.println("🏥 MEDICAL INFORMATION:");
+        System.out.println("─".repeat(30));
+        System.out.printf("%-20s: %s%n", "Blood Group",
+                profileData.get("bloodGroup") != null ? profileData.get("bloodGroup") : "Not provided");
+        System.out.printf("%-20s: %s%n", "Insurance Number",
+                profileData.get("insuranceNumber") != null ? profileData.get("insuranceNumber") : "Not provided");
+        System.out.printf("%-20s: %s%n", "Medical History",
+                profileData.get("medicalHistory") != null ? profileData.get("medicalHistory") : "None recorded");
+        System.out.printf("%-20s: %s%n", "Allergies",
+                profileData.get("allergies") != null ? profileData.get("allergies") : "None recorded");
+
+        System.out.println();
+
+        // Contact Information
+        System.out.println("📞 CONTACT INFORMATION:");
+        System.out.println("─".repeat(30));
+        System.out.printf("%-20s: %s%n", "Address",
+                profileData.get("address") != null ? profileData.get("address") : "Not provided");
+        System.out.printf("%-20s: %s%n", "Emergency Contact",
+                profileData.get("emergencyContactName") != null ? profileData.get("emergencyContactName") : "Not provided");
+        System.out.printf("%-20s: %s%n", "Emergency Phone",
+                profileData.get("emergencyContactPhone") != null ? profileData.get("emergencyContactPhone") : "Not provided");
+
+        System.out.println("═".repeat(60));
+
+        // Wait for user to read
+        input.getString("Press Enter to continue...");
+    }
+
+    // Placeholder methods for other account settings
+    private void handleChangePassword() {
+        System.out.println("🔑 CHANGE PASSWORD - Coming soon!");
+        System.out.println("🚧 This feature will allow you to change your account password");
+    }
+
+    private void handleChangeEmail() {
+        System.out.println("📧 CHANGE EMAIL - Coming soon!");
+        System.out.println("🚧 This feature will allow you to update your email address");
+    }
+
+    private void handleChangePhone() {
+        System.out.println("📱 CHANGE PHONE - Coming soon!");
+        System.out.println("🚧 This feature will allow you to update your phone number");
+    }
+
+    private void handleDeleteAccount() {
+        System.out.println("❌ DELETE ACCOUNT - Coming soon!");
+        System.out.println("⚠️  This feature will allow you to permanently delete your account");
+        System.out.println("🔒 For security reasons, this requires admin approval");
+    }
+
 
     // Helper methods for input validation (same as before)
     private String getValidatedInput(String prompt, java.util.function.Predicate<String> validator) {
