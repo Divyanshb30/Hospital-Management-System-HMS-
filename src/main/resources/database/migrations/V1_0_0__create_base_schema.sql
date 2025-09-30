@@ -165,7 +165,7 @@ FOREIGN KEY (head_doctor_id) REFERENCES doctors(id) ON DELETE SET NULL;
 
 -- Step 9: Insert default data
 INSERT INTO users (username, password_hash, email, phone, role) VALUES
-('admin', 'salt123:hashedpassword123', 'admin@hospital.com', '9999999999', 'ADMIN');
+('admin', 'MOeB06gWDvXjHktVrJ6dgw==:wl/1KlAWBI1y/s75bbtMOccdrdrIAw+jhxIbeX5bDDk=', 'admin@hospital.com', '9999999999', 'ADMIN');
 
 INSERT INTO departments (name, description, location, phone) VALUES
 ('Cardiology', 'Heart and cardiovascular diseases', 'Building A, Floor 2', '011-1234-5601'),

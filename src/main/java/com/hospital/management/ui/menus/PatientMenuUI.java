@@ -327,7 +327,127 @@ public class PatientMenuUI {
     }
 
     private void handleUpdateProfile() {
-        System.out.println("📋 UPDATE PROFILE - Coming soon!");
+        System.out.println("\n📋 UPDATE PROFILE");
+        System.out.println("=" .repeat(20));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            Long patientId = currentUser.getId();
+
+            System.out.println("📝 Update your profile information");
+            System.out.println("💡 Leave fields blank to keep current values");
+            System.out.println();
+
+            // Collect updated information
+            String firstName = input.getString("👤 First Name: ");
+            String lastName = input.getString("👤 Last Name: ");
+            String email = input.getString("📧 Email: ");
+            String phone = input.getString("📱 Phone Number: ");
+
+            // Validate basic fields if provided
+            if (!firstName.isEmpty() && !InputValidator.isValidName(firstName)) {
+                System.out.println("❌ Invalid first name format");
+                return;
+            }
+            if (!lastName.isEmpty() && !InputValidator.isValidName(lastName)) {
+                System.out.println("❌ Invalid last name format");
+                return;
+            }
+            if (!email.isEmpty() && !InputValidator.isValidEmail(email)) {
+                System.out.println("❌ Invalid email format");
+                return;
+            }
+            if (!phone.isEmpty() && !InputValidator.isValidPhone(phone)) {
+                System.out.println("❌ Invalid phone format");
+                return;
+            }
+
+            // Ask if user wants to update additional information
+            System.out.print("\n📋 Would you like to update additional medical information? (y/n): ");
+            String updateMedical = input.getString("").toLowerCase();
+
+            CommandResult result;
+
+            if (updateMedical.equals("y") || updateMedical.equals("yes")) {
+                // Collect additional medical information
+                System.out.println("\n🏥 Medical Information Update:");
+
+                LocalDate dateOfBirth = null;
+                String dobInput = input.getString("📅 Date of Birth (YYYY-MM-DD, blank to skip): ");
+                if (!dobInput.isEmpty()) {
+                    try {
+                        dateOfBirth = LocalDate.parse(dobInput);
+                    } catch (Exception e) {
+                        System.out.println("❌ Invalid date format, skipping date of birth update");
+                    }
+                }
+
+                Patient.Gender gender = null;
+                String genderInput = input.getString("⚧ Gender (MALE/FEMALE/OTHER, blank to skip): ");
+                if (!genderInput.isEmpty()) {
+                    try {
+                        gender = Patient.Gender.valueOf(genderInput.toUpperCase());
+                    } catch (Exception e) {
+                        System.out.println("❌ Invalid gender, skipping gender update");
+                    }
+                }
+
+                String bloodGroup = input.getString("🩸 Blood Group: ");
+                String address = input.getString("🏠 Address: ");
+                String emergencyContactName = input.getString("👤 Emergency Contact Name: ");
+                String emergencyContactPhone = input.getString("📞 Emergency Contact Phone: ");
+
+                System.out.println("\n🔄 Updating complete profile...");
+
+                // Convert empty strings to null
+                String firstNameParam = firstName.isEmpty() ? null : firstName;
+                String lastNameParam = lastName.isEmpty() ? null : lastName;
+                String emailParam = email.isEmpty() ? null : email;
+                String phoneParam = phone.isEmpty() ? null : phone;
+                String bloodGroupParam = bloodGroup.isEmpty() ? null : bloodGroup;
+                String addressParam = address.isEmpty() ? null : address;
+                String emergencyNameParam = emergencyContactName.isEmpty() ? null : emergencyContactName;
+                String emergencyPhoneParam = emergencyContactPhone.isEmpty() ? null : emergencyContactPhone;
+
+                // Call PatientController with full profile update
+                result = patientController.updatePatientProfile(patientId, firstNameParam, lastNameParam,
+                        emailParam, phoneParam, dateOfBirth, gender, bloodGroupParam, addressParam,
+                        emergencyNameParam, emergencyPhoneParam);
+            } else {
+                System.out.println("\n🔄 Updating basic profile...");
+
+                // Convert empty strings to null
+                String firstNameParam = firstName.isEmpty() ? null : firstName;
+                String lastNameParam = lastName.isEmpty() ? null : lastName;
+                String emailParam = email.isEmpty() ? null : email;
+                String phoneParam = phone.isEmpty() ? null : phone;
+
+                // Call PatientController with basic profile update
+                result = patientController.updatePatientProfile(patientId, firstNameParam,
+                        lastNameParam, emailParam, phoneParam);
+            }
+
+            // Handle result
+            if (result.isSuccess()) {
+                System.out.println("✅ " + result.getMessage());
+                System.out.println("📝 Profile updated successfully!");
+
+                // Update current user info if email/phone was changed
+                if (result.getData() instanceof User) {
+                    User updatedUser = (User) result.getData();
+                    currentUser = updatedUser;
+                }
+            } else {
+                System.out.println("❌ " + result.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Update profile error: " + e.getMessage());
+        }
     }
 
     private void handleViewMedicalHistory() {
