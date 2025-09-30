@@ -125,7 +125,7 @@ public class AdminMenuUI {
 
         try {
             String loginId = input.getString("👤 Admin Username: ");
-            String password = input.getString("🔑 Admin Password: ");
+            String password = input.getPasswordInput("🔑 Admin Password: ");
 
             if (loginId.isEmpty() || password.isEmpty()) {
                 System.out.println("❌ Admin credentials are required");

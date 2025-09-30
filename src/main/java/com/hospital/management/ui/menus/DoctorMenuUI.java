@@ -112,7 +112,7 @@ public class DoctorMenuUI {
 
         try {
             String loginId = input.getString("👤 Doctor ID or Email: ");
-            String password = input.getString("🔑 Password: ");
+            String password = input.getPasswordInput("🔑 Password: ");
 
             if (loginId.isEmpty() || password.isEmpty()) {
                 System.out.println("❌ Login ID and password are required");

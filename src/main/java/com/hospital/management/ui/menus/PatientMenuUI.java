@@ -167,8 +167,9 @@ public class PatientMenuUI {
             String phone = getValidatedInput("📱 Phone Number: ", InputValidator::isValidPhone);
             String username = getValidatedInput("👤 Username: ", InputValidator::isValidUsername);
 
-            String password = getValidatedPassword("🔑 Password: ");
-            String confirmPassword = input.getString("🔑 Confirm Password: ");
+
+            String password = input.getPasswordInput("🔑Password: ");
+            String confirmPassword = getValidatedPassword("🔑Confirm Password: ");
 
             if (!password.equals(confirmPassword)) {
                 System.out.println("❌ Passwords do not match");
@@ -367,14 +368,7 @@ public class PatientMenuUI {
         while (true) {
             try {
                 String dateStr = input.getString(prompt);
-                LocalDate date = LocalDate.parse(dateStr);
-
-                if (date.isBefore(LocalDate.now())) {
-                    System.out.println("❌ Date cannot be in the past");
-                    continue;
-                }
-
-                return date;
+                return LocalDate.parse(dateStr);
             } catch (DateTimeParseException e) {
                 System.out.println("❌ Invalid date format. Please use YYYY-MM-DD format.");
             }
