@@ -1,6 +1,7 @@
 package com.hospital.management.ui;
 
 import java.util.Scanner;
+import java.io.Console;
 
 /**
  * Simple input handler for UI layer only
@@ -9,6 +10,7 @@ public class
 InputHandler {
     private static InputHandler instance;
     private final Scanner scanner = new Scanner(System.in);
+    private final Console console = System.console();
 
     private InputHandler() {}
 
@@ -38,4 +40,19 @@ InputHandler {
             }
         }
     }
+
+    public String getPasswordInput(String prompt) {
+        System.out.print(prompt);
+
+        if (console != null) {
+            // Use console for password masking
+            char[] passwordChars = console.readPassword();
+            return new String(passwordChars);
+        } else {
+            // Fallback for IDEs that don't support console
+            System.out.print("(Note: Password will be visible) ");
+            return scanner.nextLine().trim();
+        }
+    }
 }
+
