@@ -3,32 +3,42 @@ package com.hospital.management.controllers;
 import com.hospital.management.commands.Command;
 import com.hospital.management.commands.CommandResult;
 import com.hospital.management.commands.PatientCommands.*;
-import com.hospital.management.interfaces.UserService;
-import com.hospital.management.interfaces.AppointmentService;
-import com.hospital.management.models.Patient;
+import com.hospital.management.interfaces.*;
+import com.hospital.management.services.impl.*;
+import com.hospital.management.models.*;
+import com.hospital.management.common.enums.PaymentMethod;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Controller handling patient-related activities by invoking commands.
  */
 public class PatientController {
-
     private final UserService userService;
     private final AppointmentService appointmentService;
+    private final BillingService billingService;           // ✅ ADD THIS
+    private final PaymentService paymentService;           // ✅ ADD THIS
+    private final DepartmentService departmentService;     // ✅ ADD THIS
+    private final DoctorService doctorService;             // ✅ ADD THIS
 
-    public PatientController(UserService userService, AppointmentService appointmentService) {
+    // ✅ UPDATED CONSTRUCTOR:
+    public PatientController(UserService userService, AppointmentService appointmentService,
+                             BillingService billingService, PaymentService paymentService) {
         this.userService = userService;
         this.appointmentService = appointmentService;
+        this.billingService = billingService;
+        this.paymentService = paymentService;
+        this.departmentService = new DepartmentServiceImpl();
+        this.doctorService = new DoctorServiceImpl();
     }
 
-    // Registers a new patient (minimum required fields)
+    // ✅ EXISTING METHODS (keep all your current methods)
     public CommandResult registerPatient(String username, String password, String email, String phone,
                                          String firstName, String lastName, LocalDate dateOfBirth, Patient.Gender gender) {
         Command command = new RegisterPatientCommand(
                 username, password, email, phone,
                 firstName, lastName, dateOfBirth, gender, userService);
-
         try {
             return command.execute();
         } catch (Exception e) {
@@ -36,7 +46,6 @@ public class PatientController {
         }
     }
 
-    // Optional: Register patient with additional fields (overloaded method)
     public CommandResult registerPatientFull(String username, String password, String email, String phone,
                                              String firstName, String lastName, LocalDate dateOfBirth, Patient.Gender gender,
                                              String bloodGroup, String address,
@@ -46,7 +55,6 @@ public class PatientController {
                 firstName, lastName, dateOfBirth, gender,
                 bloodGroup, address, emergencyContactName, emergencyContactPhone,
                 userService);
-
         try {
             return command.execute();
         } catch (Exception e) {
@@ -79,11 +87,18 @@ public class PatientController {
         }
     }
 
-    // Books an appointment for a patient
+    // ✅ UPDATED: Use new BookAppointmentCommand with payment support
     public CommandResult bookAppointment(Long patientId, Long doctorId, LocalDate appointmentDate,
                                          LocalTime appointmentTime, String reason) {
-        Command command = new BookAppointmentCommand(
-                patientId, doctorId, appointmentDate, appointmentTime, reason, appointmentService);
+        // Default to CASH payment for backward compatibility
+        return bookAppointmentWithPayment(patientId, doctorId, appointmentDate, appointmentTime, reason, PaymentMethod.CASH);
+    }
+
+    // ✅ NEW: Enhanced booking with payment method
+    public CommandResult bookAppointmentWithPayment(Long patientId, Long doctorId, LocalDate appointmentDate,
+                                                    LocalTime appointmentTime, String reason, PaymentMethod paymentMethod) {
+        Command command = new BookAppointmentCommand(patientId, doctorId, appointmentDate, appointmentTime,
+                reason, paymentMethod, appointmentService, doctorService, billingService, paymentService);
         try {
             return command.execute();
         } catch (Exception e) {
@@ -91,7 +106,6 @@ public class PatientController {
         }
     }
 
-    // Views appointments for a patient
     public CommandResult viewAppointments(Long patientId) {
         Command command = new ViewAppointmentsCommand(patientId, appointmentService);
         try {
@@ -101,7 +115,6 @@ public class PatientController {
         }
     }
 
-    // Add this method to your PatientController class
     public CommandResult viewPatientProfile(Long patientId) {
         Command command = new ViewPatientProfileCommand(patientId, userService);
         try {
@@ -111,7 +124,6 @@ public class PatientController {
         }
     }
 
-    // Add this method to PatientController
     public CommandResult viewPatientBills(Long patientId) {
         Command command = new ViewPatientBillsCommand(patientId);
         try {
@@ -121,4 +133,32 @@ public class PatientController {
         }
     }
 
+    // ✅ ADD THESE NEW METHODS FOR UI SUPPORT:
+    public CommandResult getAllDepartments() {
+        try {
+            List<Department> departments = departmentService.getDepartmentsWithDoctors();
+            return CommandResult.success("Departments retrieved successfully", departments);
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving departments: " + e.getMessage(), null);
+        }
+    }
+
+    public CommandResult getDoctorsByDepartment(Long departmentId) {
+        try {
+            List<Doctor> doctors = doctorService.getDoctorsByDepartment(departmentId);
+            return CommandResult.success("Doctors retrieved successfully", doctors);
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving doctors: " + e.getMessage(), null);
+        }
+    }
+
+
+    public CommandResult getAvailableTimeSlots(Long doctorId, LocalDate appointmentDate) {
+        try {
+            List<LocalTime> availableSlots = doctorService.getAvailableTimeSlots(doctorId, appointmentDate);
+            return CommandResult.success("Available time slots retrieved", availableSlots);
+        } catch (Exception e) {
+            return CommandResult.failure("Error retrieving time slots: " + e.getMessage(), null);
+        }
+    }
 }

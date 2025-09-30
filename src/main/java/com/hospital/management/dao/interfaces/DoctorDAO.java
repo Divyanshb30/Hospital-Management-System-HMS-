@@ -11,4 +11,6 @@ public interface DoctorDAO {
     boolean createDoctor(Doctor doctor);
     boolean updateDoctor(Doctor doctor);
     boolean deleteDoctor(int id);
+    List<Doctor> getDoctorsByDepartment(Long departmentId);
+
 }

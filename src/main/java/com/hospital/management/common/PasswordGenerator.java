@@ -4,7 +4,7 @@ import com.hospital.management.common.utils.PasswordEncoder;
 
 public class PasswordGenerator {
     public static void main(String[] args) {
-        String password = "Admin@123"; // Change this to your desired password
+        String password = "12348765@"; // Change this to your desired password
         String encodedPassword = PasswordEncoder.encodePassword(password);
 
         System.out.println("Password: " + password);

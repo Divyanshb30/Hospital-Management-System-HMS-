@@ -106,6 +106,35 @@ public class DoctorDAOImpl implements DoctorDAO {
         return false;
     }
 
+    @Override
+    public List<Doctor> getDoctorsByDepartment(Long departmentId) {
+        List<Doctor> doctors = new ArrayList<>();
+        String sql = """
+        SELECT d.*, u.username, u.email, u.phone 
+        FROM doctors d 
+        JOIN users u ON d.user_id = u.id 
+        WHERE d.department_id = ? AND d.is_available = true AND u.is_active = true
+        ORDER BY d.first_name, d.last_name
+        """;
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, departmentId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Doctor doctor = mapResultSetToDoctor(rs);
+                doctor.setUsername(rs.getString("username"));
+                doctor.setEmail(rs.getString("email"));
+                doctor.setPhone(rs.getString("phone"));
+                doctors.add(doctor);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return doctors;
+    }
+
+
+
     private Doctor mapResultSetToDoctor(ResultSet rs) throws SQLException {
         Doctor doctor = new Doctor();
         doctor.setId(rs.getLong("id"));
