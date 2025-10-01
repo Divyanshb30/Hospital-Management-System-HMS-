@@ -24,7 +24,8 @@ public class MainController {
 
     public MainController(UserService userService, AppointmentService appointmentService,
                           BillingService billingService, PaymentService paymentService) {
-        this.patientController = new PatientController(userService, appointmentService);
+        // ✅ FIX: Updated PatientController with 4 parameters
+        this.patientController = new PatientController(userService, appointmentService, billingService, paymentService);
         this.doctorController = new DoctorController(userService, appointmentService);
         this.adminController = new AdminController(userService, appointmentService, billingService, paymentService);
     }

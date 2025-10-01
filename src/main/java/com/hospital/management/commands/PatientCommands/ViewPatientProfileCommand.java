@@ -48,7 +48,7 @@ public class ViewPatientProfileCommand implements Command {
             User user = userOpt.get();
 
             // ✅ FIX: Get patient-specific data by USER_ID, not patient ID
-            Patient patient = patientDAO.getPatientByUserId(patientId.intValue());
+            Patient patient = patientDAO.getPatientByUserId(patientId.longValue());
 
             // Create comprehensive profile data
             Map<String, Object> profileData = new HashMap<>();

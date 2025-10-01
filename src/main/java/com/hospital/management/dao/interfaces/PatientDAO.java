@@ -8,8 +8,7 @@ public interface PatientDAO {
     Patient getPatientById(int id);
     List<Patient> getAllPatients();
     boolean createPatient(Patient patient);
-    boolean updatePatient(Patient patient);
     boolean deletePatient(int id);
-    Patient getPatientByUserId(int userId);
-
+    Patient getPatientByUserId(Long userId);
+    boolean updatePatient(Patient patient);
 }

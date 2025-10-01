@@ -11,4 +11,6 @@ public interface DepartmentDAO {
     boolean updateDepartment(Department department);
     boolean deleteDepartment(Long id);
     Department getDepartmentByName(String name);
+    List<Department> getDepartmentsWithDoctors();
+
 }

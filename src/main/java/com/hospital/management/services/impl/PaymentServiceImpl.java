@@ -4,8 +4,8 @@ import com.hospital.management.interfaces.PaymentService;
 import com.hospital.management.dao.interfaces.PaymentDAO;
 import com.hospital.management.dao.impl.PaymentDAOImpl;
 import com.hospital.management.models.Payment;
+import com.hospital.management.commands.CommandResult;
 import com.hospital.management.common.exceptions.ValidationException;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -15,56 +15,95 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Optional<Payment> findPaymentById(Long id) {
-        if (id == null) return Optional.empty();
+        if (id == null) {
+            return Optional.empty();
+        }
         Payment payment = paymentDAO.getPaymentById(id.intValue());
         return Optional.ofNullable(payment);
     }
 
     @Override
     public List<Payment> getPaymentsByBill(Long billId) {
-        if (billId == null) return List.of();
-
+        if (billId == null) {
+            return List.of();
+        }
         return paymentDAO.getAllPayments().stream()
                 .filter(payment -> billId.equals(payment.getBillId()))
                 .toList();
     }
 
     @Override
-    public boolean processPayment(Payment payment) {
-        if (payment == null) return false;
-
+    public CommandResult processPayment(Payment payment) {
         try {
             payment.validate();
-            // Could add more process/payment gateway integration logic here
-            payment.markAsProcessing();
             boolean created = paymentDAO.createPayment(payment);
-            if (created) {
-                payment.markAsCompleted();
-                return paymentDAO.updatePayment(payment);
+
+            if (created && payment.getId() != null) {
+                System.out.println("✅ Payment processed successfully with ID: " + payment.getId());
+
+                if (payment.requiresProcessing()) {
+                    payment.markAsCompleted();
+                    boolean updated = paymentDAO.updatePayment(payment);
+                    if (updated) {
+                        System.out.println("✅ Payment status updated to: " + payment.getStatus());
+                    }
+                }
+
+                return CommandResult.success("Payment processed successfully", payment);
+            } else {
+                return CommandResult.failure("Failed to create payment record");
             }
-            return false;
 
         } catch (ValidationException e) {
-            System.err.println("Payment validation failed: " + e.getMessage());
-            return false;
+            return CommandResult.failure("Payment validation failed: " + e.getMessage());
+        } catch (Exception e) {
+            return CommandResult.failure("Payment processing error: " + e.getMessage());
         }
     }
 
     @Override
     public boolean updatePayment(Payment payment) {
-        if (payment == null || payment.getId() == null) return false;
-
         try {
+            if (payment.getId() == null) {
+                System.err.println("❌ Cannot update payment: Payment ID is null");
+                return false;
+            }
+
             payment.validate();
-            return paymentDAO.updatePayment(payment);
+            boolean updated = paymentDAO.updatePayment(payment);
+            if (updated) {
+                System.out.println("✅ Payment updated successfully");
+                return true;
+            } else {
+                System.err.println("❌ Failed to update payment");
+                return false;
+            }
+
         } catch (ValidationException e) {
-            System.err.println("Payment validation failed on update: " + e.getMessage());
+            System.err.println("❌ Payment validation failed: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            System.err.println("❌ Error updating payment: " + e.getMessage());
             return false;
         }
     }
 
+    // ADD THIS MISSING METHOD
     @Override
     public List<Payment> getAllPayments() {
-        return paymentDAO.getAllPayments();
+        try {
+            return paymentDAO.getAllPayments();
+        } catch (Exception e) {
+            System.err.println("❌ Error getting all payments: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<Payment> getPaymentsByPatient(Long patientId) {
+        if (patientId == null) {
+            return List.of();
+        }
+        return paymentDAO.getPaymentsByPatientId(patientId);
     }
 }
