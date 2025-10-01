@@ -106,6 +106,75 @@ public class DoctorDAOImpl implements DoctorDAO {
         return false;
     }
 
+    @Override
+    public List<Doctor> getDoctorsByDepartment(Long departmentId) {
+        List<Doctor> doctors = new ArrayList<>();
+        String sql = """
+        SELECT d.*, u.username, u.email, u.phone 
+        FROM doctors d 
+        JOIN users u ON d.user_id = u.id 
+        WHERE d.department_id = ? AND d.is_available = true AND u.is_active = true
+        ORDER BY d.first_name, d.last_name
+        """;
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, departmentId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Doctor doctor = mapResultSetToDoctor(rs);
+                doctor.setUsername(rs.getString("username"));
+                doctor.setEmail(rs.getString("email"));
+                doctor.setPhone(rs.getString("phone"));
+                doctors.add(doctor);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return doctors;
+    }
+
+    @Override
+    public boolean updateDoctorQualification(Long doctorId, String qualification) {
+        String sql = "UPDATE doctors SET qualification=?, updated_at=NOW() WHERE id=?";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, qualification);
+            stmt.setLong(2, doctorId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating doctor qualification: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean updateConsultationFee(Long doctorId, java.math.BigDecimal consultationFee) {
+        String sql = "UPDATE doctors SET consultation_fee=?, updated_at=NOW() WHERE id=?";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setBigDecimal(1, consultationFee);
+            stmt.setLong(2, doctorId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating consultation fee: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
     private Doctor mapResultSetToDoctor(ResultSet rs) throws SQLException {
         Doctor doctor = new Doctor();
         doctor.setId(rs.getLong("id"));

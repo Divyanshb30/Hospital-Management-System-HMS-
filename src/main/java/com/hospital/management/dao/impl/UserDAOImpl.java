@@ -1,8 +1,11 @@
 package com.hospital.management.dao.impl;
 
 
+import com.hospital.management.common.config.DatabaseConfig;
 import com.hospital.management.dao.interfaces.UserDAO;
 import com.hospital.management.models.User;
+import com.hospital.management.services.impl.UserServiceImpl;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,5 +117,42 @@ public class UserDAOImpl implements UserDAO {
         user.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
         return user;
     }
+    // ✅ ADD THESE METHODS TO UserDAOImpl.java:
+
+    // ✅ UPDATE UserDAOImpl.java verifyUserPassword method to use existing auth:
+    @Override
+    public boolean verifyUserPassword(String username, String password) {
+        // ✅ Use the same authentication logic that works for login
+        try {
+            UserServiceImpl userService = new UserServiceImpl();
+            return userService.authenticate(username, password);
+        } catch (Exception e) {
+            System.out.println("❌ Error verifying password: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    @Override
+    public boolean updateUserPassword(Long userId, String hashedPassword) {
+        String sql = "UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, hashedPassword);
+            stmt.setLong(2, userId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ Error updating password: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }
 

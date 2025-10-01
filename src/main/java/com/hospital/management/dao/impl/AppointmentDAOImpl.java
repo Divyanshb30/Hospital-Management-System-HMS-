@@ -1,6 +1,8 @@
 package com.hospital.management.dao.impl;
 
 
+import com.hospital.management.common.config.DatabaseConfig;
+import com.hospital.management.common.enums.AppointmentStatus;
 import com.hospital.management.dao.interfaces.AppointmentDAO;
 import com.hospital.management.models.Appointment;
 import java.sql.*;
@@ -109,6 +111,70 @@ public class AppointmentDAOImpl implements AppointmentDAO {
         }
         return false;
     }
+
+    @Override
+    public List<Appointment> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate appointmentDate) {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = "SELECT * FROM appointments WHERE doctor_id = ? AND appointment_date = ?";
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, doctorId);
+            stmt.setDate(2, java.sql.Date.valueOf(appointmentDate));
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                appointments.add(mapResultSetToAppointment(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return appointments;
+    }
+
+    @Override
+    public boolean updateAppointmentStatus(Long appointmentId, AppointmentStatus status) {
+        String sql = "UPDATE appointments SET status = ? WHERE id = ?";
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status.name());
+            stmt.setLong(2, appointmentId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public List<Appointment> getAppointmentsByUserId(Long userId) {
+        List<Appointment> appointments = new ArrayList<>();
+
+        // JOIN query: user_id -> patient_id -> appointments
+        String sql = "SELECT a.* FROM appointments a " +
+                "INNER JOIN patients p ON a.patient_id = p.id " +
+                "WHERE p.user_id = ? " +
+                "ORDER BY a.appointment_date DESC, a.appointment_time DESC";
+
+        try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, userId); // Pass user_id = 7
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                appointments.add(mapResultSetToAppointment(rs));
+            }
+
+            System.out.println("✅ Found " + appointments.size() + " appointments for user_id: " + userId);
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error fetching appointments for user_id: " + userId);
+            e.printStackTrace();
+        }
+
+        return appointments;
+    }
+
+
 
     private Appointment mapResultSetToAppointment(ResultSet rs) throws SQLException {
         Appointment appointment = new Appointment();

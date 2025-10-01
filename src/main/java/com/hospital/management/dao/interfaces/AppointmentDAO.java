@@ -4,6 +4,8 @@ package com.hospital.management.dao.interfaces;
 
 import com.hospital.management.models.Appointment;
 import java.util.List;
+import java.time.LocalDate;
+import com.hospital.management.common.enums.AppointmentStatus;
 
 public interface AppointmentDAO {
     Appointment getAppointmentById(int id);
@@ -11,4 +13,7 @@ public interface AppointmentDAO {
     boolean createAppointment(Appointment appointment);
     boolean updateAppointment(Appointment appointment);
     boolean deleteAppointment(int id);
+    List<Appointment> getAppointmentsByDoctorAndDate(Long doctorId, LocalDate appointmentDate);
+    boolean updateAppointmentStatus(Long appointmentId, AppointmentStatus status);
+    List<Appointment> getAppointmentsByUserId(Long patientId);
 }

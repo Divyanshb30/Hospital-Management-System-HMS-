@@ -126,6 +126,7 @@ public class Bill {
         this.updatedAt = LocalDateTime.now();
     }
 
+
     // Business methods
     public BigDecimal calculateFinalAmount() {
         if (totalAmount == null) return BigDecimal.ZERO;

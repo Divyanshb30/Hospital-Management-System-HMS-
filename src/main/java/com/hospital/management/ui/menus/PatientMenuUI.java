@@ -1,23 +1,21 @@
 package com.hospital.management.ui.menus;
 
+import com.hospital.management.common.enums.PaymentMethod;
 import com.hospital.management.controllers.PatientController;
+import com.hospital.management.models.*;
 import com.hospital.management.services.impl.UserServiceImpl;
 import com.hospital.management.ui.InputHandler;
 import com.hospital.management.commands.CommandResult;
-import com.hospital.management.models.Patient;
-import com.hospital.management.models.User;
 import com.hospital.management.common.utils.InputValidator;
 import com.hospital.management.common.enums.UserRole;
-import com.hospital.management.models.Bill;
-import com.hospital.management.models.Payment;
 
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import java.util.Map;
-import java.util.List;  // ✅ ADD THIS IMPORT
+import java.util.List;
 
 /**
  * Patient Menu UI with login/logout functionality
@@ -82,8 +80,7 @@ public class PatientMenuUI {
         System.out.println("1. 📅 Book Appointment");
         System.out.println("2. 👁️  View My Appointments");
         System.out.println("3. 📋 Update Profile");
-        System.out.println("4. 📊 View Medical History");
-        System.out.println("5. 💰 View Bills & Payments");
+        System.out.println("4. 💰 View Bills & Payments");
         System.out.println("9. 🔧 Account Settings");
         System.out.println("0. 🚪 Logout");
         System.out.println("=".repeat(50));
@@ -94,8 +91,7 @@ public class PatientMenuUI {
             case 1 -> handleBookAppointment();
             case 2 -> handleViewAppointments();
             case 3 -> handleUpdateProfile();
-            case 4 -> handleViewMedicalHistory();
-            case 5 -> handleViewBills();
+            case 4 -> handleViewBills();
             case 9 -> handleAccountSettings();
             case 0 -> {
                 handleLogout();
@@ -176,6 +172,7 @@ public class PatientMenuUI {
             String password = getValidatedPassword("🔑 Password: ");
             String confirmPassword = input.getPasswordInput("🔑 Confirm Password: ");
 
+
             if (!password.equals(confirmPassword)) {
                 System.out.println("❌ Passwords do not match");
                 return;
@@ -235,6 +232,7 @@ public class PatientMenuUI {
             System.out.println("❌ Registration error: " + e.getMessage());
         }
     }
+
     private void handleBookAppointment() {
         System.out.println("\n📅 BOOK APPOINTMENT");
         System.out.println("=" .repeat(25));
@@ -245,48 +243,213 @@ public class PatientMenuUI {
                 return;
             }
 
-            Long patientId = currentUser.getId();
+            // ✅ FIX: Get the actual patient ID from database
+            Long userId = currentUser.getId();
+            System.out.println("🔍 Debug: User ID = " + userId);
 
-            // Get doctor ID (simplified - in real app, you'd show available doctors)
-            System.out.println("\n👨‍⚕️ Available Doctors:");
-            System.out.println("1. Dr. John Smith (ID: 1) - Cardiology");
-            System.out.println("2. Dr. Jane Doe (ID: 2) - Neurology");
-            System.out.println("3. Dr. Bob Wilson (ID: 3) - Orthopedics");
+            // Query to get the actual patient ID
+            Long patientId = getPatientIdFromDatabase(userId);
+            if (patientId == null) {
+                System.out.println("❌ Patient record not found for user ID: " + userId);
+                return;
+            }
 
-            Long doctorId = Long.valueOf(input.getInt("Select doctor ID (1-3): ", 1, 3));
+            System.out.println("🔍 Debug: Patient ID = " + patientId);
 
-            // Get appointment date
-            LocalDate appointmentDate = getDateInput("📅 Appointment Date (YYYY-MM-DD): ");
+            // Step 1: Select Department
+            System.out.println("\n🏥 STEP 1: Select Department");
+            CommandResult deptResult = patientController.getAllDepartments();
+            if (!deptResult.isSuccess()) {
+                System.out.println("❌ " + deptResult.getMessage());
+                return;
+            }
 
-            // Get appointment time
-            LocalTime appointmentTime = getTimeInput();
+            @SuppressWarnings("unchecked")
+            List<Department> departments = (List<Department>) deptResult.getData();
 
-            // Get reason (optional)
-            String reason = input.getString("📝 Reason for appointment (optional): ");
+            if (departments.isEmpty()) {
+                System.out.println("❌ No departments available");
+                return;
+            }
+
+            System.out.println("\nAvailable Departments:");
+            for (int i = 0; i < departments.size(); i++) {
+                Department dept = departments.get(i);
+                System.out.printf("%d. %s - %s%n", i + 1, dept.getName(), dept.getDescription());
+            }
+
+            int deptChoice = input.getInt("Select department (1-" + departments.size() + "): ", 1, departments.size());
+            Department selectedDept = departments.get(deptChoice - 1);
+
+            // Step 2: Select Doctor
+            System.out.println("\n👨‍⚕️ STEP 2: Select Doctor from " + selectedDept.getName());
+            CommandResult doctorResult = patientController.getDoctorsByDepartment(selectedDept.getId());
+            if (!doctorResult.isSuccess()) {
+                System.out.println("❌ " + doctorResult.getMessage());
+                return;
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Doctor> doctors = (List<Doctor>) doctorResult.getData();
+
+            if (doctors.isEmpty()) {
+                System.out.println("❌ No doctors available in this department");
+                return;
+            }
+
+            System.out.println("\nAvailable Doctors:");
+            for (int i = 0; i < doctors.size(); i++) {
+                Doctor doctor = doctors.get(i);
+                System.out.printf("%d. Dr. %s %s - %s (Fee: ₹%s)%n",
+                        i + 1, doctor.getFirstName(), doctor.getLastName(),
+                        doctor.getSpecialization(), doctor.getConsultationFee());
+            }
+
+            int doctorChoice = input.getInt("Select doctor (1-" + doctors.size() + "): ", 1, doctors.size());
+            Doctor selectedDoctor = doctors.get(doctorChoice - 1);
+
+            // Step 3: Select Date
+            System.out.println("\n📅 STEP 3: Select Appointment Date");
+            LocalDate appointmentDate = getDateInput("Enter appointment date (YYYY-MM-DD): ");
+
+            // Step 4: Select Time Slot
+            System.out.println("\n⏰ STEP 4: Select Time Slot");
+            CommandResult slotsResult = patientController.getAvailableTimeSlots(selectedDoctor.getId(), appointmentDate);
+            if (!slotsResult.isSuccess()) {
+                System.out.println("❌ " + slotsResult.getMessage());
+                return;
+            }
+
+            @SuppressWarnings("unchecked")
+            List<LocalTime> availableSlots = (List<LocalTime>) slotsResult.getData();
+
+            if (availableSlots.isEmpty()) {
+                System.out.println("❌ No time slots available for the selected date");
+                return;
+            }
+
+            System.out.println("\nAvailable Time Slots:");
+            for (int i = 0; i < availableSlots.size(); i++) {
+                LocalTime slot = availableSlots.get(i);
+                System.out.printf("%d. %s%n", i + 1, slot.toString());
+            }
+
+            int timeChoice = input.getInt("Select time slot (1-" + availableSlots.size() + "): ", 1, availableSlots.size());
+            LocalTime selectedTime = availableSlots.get(timeChoice - 1);
+
+            // Step 5: Enter reason (optional)
+            String reason = input.getString("\n📝 Reason for appointment (optional): ");
             if (reason.trim().isEmpty()) reason = null;
 
-            System.out.println("\n🔄 Booking appointment...");
+            // Step 6: Show bill summary
+            BigDecimal consultationFee = selectedDoctor.getConsultationFee();
+            BigDecimal taxAmount = consultationFee.multiply(BigDecimal.valueOf(0.18));
+            BigDecimal totalAmount = consultationFee.add(taxAmount);
 
-            // Call PatientController to book appointment
-            CommandResult result = patientController.bookAppointment(patientId, doctorId,
-                    appointmentDate, appointmentTime, reason);
+            System.out.println("\n💰 BILL SUMMARY:");
+            System.out.println("═".repeat(40));
+            System.out.println("Consultation Fee: ₹" + consultationFee);
+            System.out.println("Tax (18%):        ₹" + taxAmount);
+            System.out.println("─".repeat(40));
+            System.out.println("Total Amount:     ₹" + totalAmount);
+            System.out.println("═".repeat(40));
 
-            // Handle result
+            // ✅ FIX: Step 7: Select Payment Method
+            System.out.println("\n💳 STEP 7: Select Payment Method");
+            System.out.println("1. 💵 Cash");
+            System.out.println("2. 💳 Credit Card");
+            System.out.println("3. 💳 Debit Card");
+            System.out.println("4. 📱 UPI");
+
+            int paymentMethodChoice = input.getInt("Select payment method (1-4): ", 1, 4);
+
+            PaymentMethod selectedPaymentMethod = switch (paymentMethodChoice) {
+                case 1 -> PaymentMethod.CASH;
+                case 2 -> PaymentMethod.CREDIT_CARD;
+                case 3 -> PaymentMethod.DEBIT_CARD;
+                case 4 -> PaymentMethod.UPI;
+                default -> PaymentMethod.CASH;
+            };
+
+            String paymentMethodName = switch (paymentMethodChoice) {
+                case 1 -> "Cash";
+                case 2 -> "Credit Card";
+                case 3 -> "Debit Card";
+                case 4 -> "UPI";
+                default -> "Cash";
+            };
+
+            System.out.println("✅ Selected Payment Method: " + paymentMethodName);
+
+            // Step 8: Final Payment Confirmation
+            System.out.println("\n💳 Payment Confirmation:");
+            System.out.println("1. ✅ Complete Payment");
+            System.out.println("2. ❌ Go Back");
+
+            int paymentChoice = input.getInt("Select option (1-2): ", 1, 2);
+            if (paymentChoice == 2) {
+                System.out.println("❌ Appointment booking cancelled");
+                return;
+            }
+
+            // Process appointment with payment using the correct patientId
+            System.out.println("\n🔄 Processing appointment and payment...");
+            CommandResult result = patientController.bookAppointmentWithPayment(patientId, selectedDoctor.getId(),
+                    appointmentDate, selectedTime, reason, selectedPaymentMethod);
+
             if (result.isSuccess()) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> data = (Map<String, Object>) result.getData();
+
+                Appointment appointment = (Appointment) data.get("appointment");
+                Bill bill = (Bill) data.get("bill");
+                Payment payment = (Payment) data.get("payment");
+
                 System.out.println("✅ " + result.getMessage());
-                System.out.println("📅 Appointment scheduled for " + appointmentDate + " at " + appointmentTime);
+                System.out.println("\n📋 APPOINTMENT CONFIRMATION");
+                System.out.println("═".repeat(40));
+                System.out.println("📅 Appointment ID: " + appointment.getId());
+                System.out.println("📅 Date & Time: " + appointmentDate + " at " + selectedTime);
+                System.out.println("👨‍⚕️ Doctor: Dr. " + selectedDoctor.getFirstName() + " " + selectedDoctor.getLastName());
+                System.out.println("💳 Payment Method: " + paymentMethodName);
+                System.out.println("💳 Payment ID: " + ((Payment) payment).getId());
+                System.out.println("💰 Amount Paid: ₹" + totalAmount);
+                System.out.println("═".repeat(40));
             } else {
                 System.out.println("❌ " + result.getMessage());
             }
 
         } catch (Exception e) {
             System.out.println("❌ Booking error: " + e.getMessage());
+            e.printStackTrace(); // ✅ ADD: Debug stack trace
         }
     }
 
+    // ✅ ADD THIS HELPER METHOD:
+    private Long getPatientIdFromDatabase(Long userId) {
+        try {
+            String sql = "SELECT p.id FROM patients p WHERE p.user_id = ?";
+            try (java.sql.Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
+                 java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setLong(1, userId);
+                java.sql.ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return rs.getLong("id");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Database error getting patient ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // ... REST OF YOUR EXISTING METHODS REMAIN THE SAME ...
+
     private void handleViewAppointments() {
-        System.out.println("\n👁️ VIEW APPOINTMENTS");
-        System.out.println("=" .repeat(20));
+        System.out.println("📅 VIEW APPOINTMENTS");
+        System.out.println("═".repeat(20));
 
         try {
             if (!isLoggedIn || currentUser == null) {
@@ -295,8 +458,7 @@ public class PatientMenuUI {
             }
 
             Long patientId = currentUser.getId();
-
-            System.out.println("\n🔄 Fetching your appointments...");
+            System.out.println("🔍 Fetching your appointments...");
 
             // Call PatientController to view appointments
             CommandResult result = patientController.viewAppointments(patientId);
@@ -305,21 +467,47 @@ public class PatientMenuUI {
             if (result.isSuccess()) {
                 System.out.println("✅ " + result.getMessage());
 
-                // Display appointments if available in result data
+                // Extract and display appointments from result data
                 if (result.getData() != null) {
-                    System.out.println("📋 Your appointments have been retrieved successfully");
-                    // Additional display logic can be added here based on result data
+                    @SuppressWarnings("unchecked")
+                    List<Appointment> appointments = (List<Appointment>) result.getData();
+
+                    if (appointments.isEmpty()) {
+                        System.out.println("📋 No appointments found.");
+                    } else {
+                        displayAppointmentDetails(appointments);
+                    }
                 } else {
-                    System.out.println("📋 No appointments found");
+                    System.out.println("📋 No appointments found.");
                 }
             } else {
                 System.out.println("❌ " + result.getMessage());
             }
-
         } catch (Exception e) {
             System.out.println("❌ View appointments error: " + e.getMessage());
         }
     }
+
+    // ADD THIS NEW METHOD to display appointment details
+    private void displayAppointmentDetails(List<Appointment> appointments) {
+        System.out.println("\n📅 YOUR APPOINTMENTS (" + appointments.size() + " found)");
+        System.out.println("═".repeat(80));
+
+        for (int i = 0; i < appointments.size(); i++) {
+            Appointment apt = appointments.get(i);
+            System.out.printf("%d. 🏥 Appointment ID: %d%n", (i + 1), apt.getId());
+            System.out.printf("   📅 Date: %s at %s%n", apt.getAppointmentDate(), apt.getAppointmentTime());
+            System.out.printf("   👨‍⚕️ Doctor ID: %d%n", apt.getDoctorId());
+            System.out.printf("   📋 Status: %s%n", apt.getStatus());
+            System.out.printf("   📝 Reason: %s%n", apt.getReason() != null ? apt.getReason() : "Not specified");
+            System.out.printf("   🗓️ Created: %s%n", apt.getCreatedAt() != null ? apt.getCreatedAt().toLocalDate() : "N/A");
+            System.out.println("   " + "─".repeat(76));
+        }
+
+        System.out.println("═".repeat(80));
+        input.getString("Press Enter to continue...");
+    }
+
 
     // Placeholder methods for future implementation
     private void handleForgotPassword() {
@@ -455,15 +643,9 @@ public class PatientMenuUI {
         }
     }
 
-    private void handleViewMedicalHistory() {
-        System.out.println("📊 MEDICAL HISTORY - Coming soon!");
-    }
-
-    // Add these imports at the top
-
     private void handleViewBills() {
-        System.out.println("\n💰 VIEW BILLS & PAYMENTS");
-        System.out.println("=" .repeat(30));
+        System.out.println("💰 VIEW BILLS & PAYMENTS");
+        System.out.println("═".repeat(30));
 
         try {
             if (!isLoggedIn || currentUser == null) {
@@ -471,12 +653,19 @@ public class PatientMenuUI {
                 return;
             }
 
-            Long patientId = currentUser.getId();
+            // ✅ FIX: Get the actual patient ID from database (same as appointments)
+            Long userId = currentUser.getId();
+            Long patientId = getPatientIdFromDatabase(userId);  // Convert user_id → patient_id
 
-            System.out.println("🔄 Fetching your bills and payments...");
+            if (patientId == null) {
+                System.out.println("❌ Patient record not found for user ID " + userId);
+                return;
+            }
+
+            System.out.println("🔍 Fetching your bills and payments...");
 
             // Call PatientController to get bills and payments
-            CommandResult result = patientController.viewPatientBills(patientId);
+            CommandResult result = patientController.viewPatientBills(patientId);  // Use patient_id = 2
 
             if (result.isSuccess() && result.getData() instanceof Map) {
                 @SuppressWarnings("unchecked")
@@ -484,7 +673,6 @@ public class PatientMenuUI {
 
                 @SuppressWarnings("unchecked")
                 List<Bill> bills = (List<Bill>) data.get("bills");
-
                 @SuppressWarnings("unchecked")
                 List<Payment> payments = (List<Payment>) data.get("payments");
 
@@ -560,7 +748,6 @@ public class PatientMenuUI {
         input.getString("Press Enter to continue...");
     }
 
-
     private void handleAccountSettings() {
         while (true) {
             System.out.println("\n🔧 ACCOUNT SETTINGS");
@@ -618,7 +805,7 @@ public class PatientMenuUI {
         }
     }
 
-        private void displayCompleteProfile(Map<String, Object> profileData) {
+    private void displayCompleteProfile(Map<String, Object> profileData) {
         System.out.println("\n" + "═".repeat(60));
         System.out.println("👤 COMPLETE PATIENT PROFILE");
         System.out.println("═".repeat(60));
@@ -686,9 +873,62 @@ public class PatientMenuUI {
 
     // Placeholder methods for other account settings
     private void handleChangePassword() {
-        System.out.println("🔑 CHANGE PASSWORD - Coming soon!");
-        System.out.println("🚧 This feature will allow you to change your account password");
+        System.out.println("\n🔐 CHANGE PASSWORD");
+        System.out.println("─".repeat(20));
+
+        try {
+            if (!isLoggedIn || currentUser == null) {
+                System.out.println("❌ Please login first");
+                return;
+            }
+
+            // Get current password for verification
+            String currentPassword = input.getPasswordInput("🔒 Enter current password: ");
+            if (currentPassword == null || currentPassword.trim().isEmpty()) {
+                System.out.println("❌ Current password is required");
+                return;
+            }
+
+            // Verify current password
+            boolean isValidPassword = userService.verifyPassword(currentUser.getUsername(), currentPassword);
+            if (!isValidPassword) {
+                System.out.println("❌ Current password is incorrect");
+                return;
+            }
+
+            // Get new password
+            String newPassword = input.getPasswordInput("🔑 Enter new password: ");
+            if (newPassword == null || newPassword.trim().length() < 6) {
+                System.out.println("❌ New password must be at least 6 characters long");
+                return;
+            }
+
+            // Confirm new password
+            String confirmPassword = input.getPasswordInput("🔑 Confirm new password: ");
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("❌ Passwords do not match");
+                return;
+            }
+
+            System.out.println("🔄 Updating password...");
+
+            // Update password using UserService
+            boolean success = userService.updatePassword(currentUser.getId(), newPassword);
+
+            if (success) {
+                System.out.println("✅ Password updated successfully!");
+                System.out.println("🔒 Please use your new password for future logins");
+            } else {
+                System.out.println("❌ Failed to update password");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error updating password: " + e.getMessage());
+        }
+
+        input.getString("\nPress Enter to continue...");
     }
+
 
     private void handleChangeEmail() {
         System.out.println("📧 CHANGE EMAIL - Coming soon!");
@@ -705,7 +945,6 @@ public class PatientMenuUI {
         System.out.println("⚠️  This feature will allow you to permanently delete your account");
         System.out.println("🔒 For security reasons, this requires admin approval");
     }
-
 
     // Helper methods for input validation (same as before)
     private String getValidatedInput(String prompt, java.util.function.Predicate<String> validator) {

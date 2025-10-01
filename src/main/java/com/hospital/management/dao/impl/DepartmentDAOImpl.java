@@ -127,6 +127,29 @@ public class DepartmentDAOImpl implements DepartmentDAO {
         return null;
     }
 
+    @Override
+    public List<Department> getDepartmentsWithDoctors() {
+        List<Department> departments = new ArrayList<>();
+        String sql = """
+        SELECT DISTINCT d.* FROM departments d 
+        JOIN doctors dr ON d.id = dr.department_id 
+        WHERE d.is_active = true AND dr.is_available = true 
+        ORDER BY d.name
+        """;
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                departments.add(mapResultSetToDepartment(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return departments;
+    }
+
+
+
     private Department mapResultSetToDepartment(ResultSet rs) throws SQLException {
         Department department = new Department();
         department.setId(rs.getLong("id"));

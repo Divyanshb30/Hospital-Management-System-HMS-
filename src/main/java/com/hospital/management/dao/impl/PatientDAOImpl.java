@@ -108,11 +108,11 @@ public class PatientDAOImpl implements PatientDAO {
 
     // Add this method to PatientDAOImpl.java
     @Override
-    public Patient getPatientByUserId(int userId) {
-        String sql = "SELECT * FROM patients WHERE user_id = ?";  // ✅ Search by user_id, not id
+    public Patient getPatientByUserId(Long userId) {  // Long instead of int
+        String sql = "SELECT * FROM patients WHERE user_id = ?";
         try (Connection conn = com.hospital.management.common.config.DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, userId);
+            stmt.setLong(1, userId);  // setLong instead of setInt
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return mapResultSetToPatient(rs);
@@ -122,6 +122,8 @@ public class PatientDAOImpl implements PatientDAO {
         }
         return null;
     }
+
+
 
 
     private Patient mapResultSetToPatient(ResultSet rs) throws SQLException {

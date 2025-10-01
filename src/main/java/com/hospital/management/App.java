@@ -1,6 +1,8 @@
 package com.hospital.management;
 
 import com.hospital.management.controllers.PatientController;
+import com.hospital.management.services.impl.BillingServiceImpl;
+import com.hospital.management.services.impl.PaymentServiceImpl;
 import com.hospital.management.services.impl.UserServiceImpl;
 import com.hospital.management.services.impl.AppointmentServiceImpl;
 import com.hospital.management.ui.menus.PatientMenuUI;
@@ -37,24 +39,25 @@ public class App {
         if (!DatabaseConfig.testConnection()) {
             System.err.println("❌ Database connection failed!");
             System.err.println("💡 Please run migration first:");
-            System.err.println("   mvn exec:java -Dexec.mainClass=\"com.hospital.management.common.migration.DatabaseMigrationRunner\"");
+            System.err.println(" mvn exec:java -Dexec.mainClass=\"com.hospital.management.common.migration.DatabaseMigrationRunner\"");
             return false;
         }
 
         System.out.println("✅ Database connection successful!");
-
         input = InputHandler.getInstance();
 
-        // Initialize PatientController with actual service implementations
+        // ✅ UPDATED: Initialize PatientController with all required services
         patientController = new PatientController(
-                new UserServiceImpl(),        // Real UserService
-                new AppointmentServiceImpl()  // Real AppointmentService
+                new UserServiceImpl(),      // Real UserService
+                new AppointmentServiceImpl(), // Real AppointmentService
+                new BillingServiceImpl(),   // ✅ ADD BillingService
+                new PaymentServiceImpl()    // ✅ ADD PaymentService
         );
 
         System.out.println("✅ Services initialized successfully!");
-
         return true;
     }
+
 
     private static void displayWelcomeBanner() {
         System.out.println("╔═══════════════════════════════════════════════════════╗");
